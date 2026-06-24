@@ -19,22 +19,22 @@
       "behavior": "每个 agent 的评分背后都有提交进仓的深度分析数据：开源 agent 有真实源码引用，闭源 agent 标注文档基准。",
       "verification": "analysis/<id>.json 覆盖全部 8 个 agent（claude-code, codex, pi, opencode, cursor, aider, cline, gemini-cli），每个含 6 个维度(memory/context/skill/cost/sandbox/multiagent)，每维度有 score(1-100|null)、中英证据(zh/en 非空)、citations(非空)、keep/fix。evidenceBasis ∈ {source,docs}；docs 基准(claude-code, cursor)必须带 evidenceNote{zh,en} 且 citations 全为 https URL；source 基准必须有 repo 字段且 citations 为仓库路径形状。grounding.mjs 结构校验全绿。内容由真实源码/文档分析得出（spike 阶段 clone 仓库回核，PROGRESS 记录回核证据），不得是 “证据待填” 占位。",
       "auto_verify": "node scripts/checks/grounding.mjs",
-      "state": "active",
-      "evidence": "",
+      "state": "passing",
+      "evidence": "commit 9e3f3ee",
       "blocked_reason": "",
       "created_at": "2026-06-24T12:30:00Z",
-      "updated_at": "2026-06-24T13:30:00Z"
+      "updated_at": "2026-06-24T13:40:00Z"
     },
     {
       "id": "F03",
       "behavior": "在落地页一屏看到 8 个 agent × 6 个维度的能力矩阵，含每维度评分、综合分与分段配色。",
       "verification": "index.html 渲染矩阵：8 行 agent × 6 维度列，首列(agent)sticky 左固定，每单元格显示 0-100 分 + 进度条 + 分段配色(卓越/扎实/可用/薄弱/待填)，最右列综合分=各维度均值(score=null 不计入)。hover 单元格浮出证据 tooltip，hover 行高亮，详情入口链到 agent.html#<id>。Playwright e2e 断言：行数=8、每行维度单元格数=6、综合分等于该行非空维度均值(±1 取整)、存在 data-testid 锚点。",
       "auto_verify": "npm run build && npx playwright test e2e/matrix.spec.ts",
-      "state": "not_started",
+      "state": "active",
       "evidence": "",
       "blocked_reason": "",
       "created_at": "2026-06-24T12:30:00Z",
-      "updated_at": "2026-06-24T12:30:00Z"
+      "updated_at": "2026-06-24T13:45:00Z"
     },
     {
       "id": "F04",
