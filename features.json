@@ -30,11 +30,11 @@
       "behavior": "在落地页一屏看到 8 个 agent × 6 个维度的能力矩阵，含每维度评分、综合分与分段配色。",
       "verification": "index.html 渲染矩阵：8 行 agent × 6 维度列，首列(agent)sticky 左固定，每单元格显示 0-100 分 + 进度条 + 分段配色(卓越/扎实/可用/薄弱/待填)，最右列综合分=各维度均值(score=null 不计入)。hover 单元格浮出证据 tooltip，hover 行高亮，详情入口链到 agent.html#<id>。Playwright e2e 断言：行数=8、每行维度单元格数=6、综合分等于该行非空维度均值(±1 取整)、存在 data-testid 锚点。",
       "auto_verify": "npm run build && npx playwright test e2e/matrix.spec.ts",
-      "state": "active",
-      "evidence": "",
+      "state": "passing",
+      "evidence": "commit 3ff01ca",
       "blocked_reason": "",
       "created_at": "2026-06-24T12:30:00Z",
-      "updated_at": "2026-06-24T13:45:00Z"
+      "updated_at": "2026-06-24T13:50:00Z"
     },
     {
       "id": "F04",
