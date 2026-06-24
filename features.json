@@ -1,5 +1,139 @@
 {
   "version": "1",
   "wip_limit": 1,
-  "features": []
+  "_note": "PM-FROZEN spec for Agent Harness Atlas v4.0 (Bojun 2026-06-24, solo PM+dev run). The `verification` and `auto_verify` fields are the acceptance contract — do NOT weaken them to pass. analysis/*.json is PM-frozen grounding truth: scores/citations are derived from real source analysis, never hand-edited to make a gate green. Every feature is machine-decidable (auto_verify exits 0 iff satisfied) so the L09 gate is honored without per-feature human ack. See docs/PRD.md §9.",
+  "features": [
+    {
+      "id": "F01",
+      "behavior": "访问站点能看到由单一数据源驱动的能力矩阵页与 agent 详情页两个页面（Vite 多页静态站）。",
+      "verification": "Vite 多页应用：index.html(矩阵) + agent.html(详情) 均能构建并加载。两页的 agent/维度/评分数据来自构建期合成的单一数据源（由 analysis/*.json + 站点元数据合成），不存在模版那种把数据数组内联复制两份的情况。`make build` 成功产出 dist/index.html 与 dist/agent.html；single-source 检查确认两页引用同一份合成数据模块、且仓库中不存在重复的 AGENTS 数据字面量定义（grep 只允许一处权威定义）。",
+      "auto_verify": "npm run build && node scripts/checks/single-source.mjs",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F02",
+      "behavior": "每个 agent 的评分背后都有提交进仓的深度分析数据：开源 agent 有真实源码引用，闭源 agent 标注文档基准。",
+      "verification": "analysis/<id>.json 覆盖全部 8 个 agent（claude-code, codex, pi, opencode, cursor, aider, cline, gemini-cli），每个含 6 个维度(memory/context/skill/cost/sandbox/multiagent)，每维度有 score(1-100|null)、中英证据(zh/en 非空)、citations(非空)、keep/fix。evidenceBasis ∈ {source,docs}；docs 基准(claude-code, cursor)必须带 evidenceNote{zh,en} 且 citations 全为 https URL；source 基准必须有 repo 字段且 citations 为仓库路径形状。grounding.mjs 结构校验全绿。内容由真实源码/文档分析得出（spike 阶段 clone 仓库回核，PROGRESS 记录回核证据），不得是 “证据待填” 占位。",
+      "auto_verify": "node scripts/checks/grounding.mjs",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F03",
+      "behavior": "在落地页一屏看到 8 个 agent × 6 个维度的能力矩阵，含每维度评分、综合分与分段配色。",
+      "verification": "index.html 渲染矩阵：8 行 agent × 6 维度列，首列(agent)sticky 左固定，每单元格显示 0-100 分 + 进度条 + 分段配色(卓越/扎实/可用/薄弱/待填)，最右列综合分=各维度均值(score=null 不计入)。hover 单元格浮出证据 tooltip，hover 行高亮，详情入口链到 agent.html#<id>。Playwright e2e 断言：行数=8、每行维度单元格数=6、综合分等于该行非空维度均值(±1 取整)、存在 data-testid 锚点。",
+      "auto_verify": "npm run build && npx playwright test e2e/matrix.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F04",
+      "behavior": "从矩阵点进 agent 详情页，看到该 agent 的雷达图、逐维度评分与逐维度报告卡，并能用 hash 切换 agent。",
+      "verification": "agent.html#<id> 渲染：masthead(品牌 glyph + 名称 + 一句总评 verdict + 综合分)、6 轴雷达图(score=null 维度塌到 0)、逐维度评分行、逐维度报告卡(证据段落含 `code` 机制名 + keep亮点/fix不足标签)。改 location.hash(如 #codex→#aider)即换 agent 内容、无整页刷新。Playwright e2e 断言：报告卡数=6、雷达 svg 存在且轴数=6、hash 切换后 masthead 标题随之变化。",
+      "auto_verify": "npm run build && npx playwright test e2e/detail.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F05",
+      "behavior": "矩阵和详情页显示的每个分数都始终等于分析数据里的分数，不会出现两处不一致的漂移。",
+      "verification": "矩阵单元格分数、详情页维度分数、综合分均派生自 analysis/<id>.json，没有第二处手写分数。scoresync.mjs 遍历全部 8×6 个维度分数 + 8 个综合分，逐一断言 UI 合成数据 == analysis JSON 源值；任一处不等则非零退出。",
+      "auto_verify": "node scripts/checks/scoresync.mjs",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F06",
+      "behavior": "点开任一评分都能看到维度相关、各不相同的真实证据引用，没有用同一个首页链接糊弄所有格子。",
+      "verification": "citations.mjs 校验：source 基准 agent 的每条 citation 匹配仓库路径形状(形如 `repo-root/path:Lx-Ly` 或 `path:Lx`，非 URL)且以已知仓库根开头；docs 基准 agent 的每条 citation 是 https URL。反 blanket：单个 agent 内不允许某一条 citation 覆盖其多数维度(去重后每个 agent 的不同 citation 路径数 ≥ 维度数的合理比例，且无单条占比>50%)。docs URL 抽样 live 校验(允许 3xx 跳转到规范页)。开源 agent 不得出现 “证据待填/Evidence pending”。",
+      "auto_verify": "node scripts/checks/citations.mjs",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F07",
+      "behavior": "详情页明确告诉读者这个 agent 的结论是基于源码还是基于官方文档。",
+      "verification": "agent 详情页有可见的证据基准标签：[data-testid=\"evidence-basis\"] 带 data-basis=source|docs。source 基准显示 “源码基准/Source”，docs 基准(claude-code, cursor)显示 “文档基准/Docs” 并展示 evidenceNote。Playwright e2e 遍历 8 个 agent：每页存在该标签、data-basis 值与 analysis JSON 的 evidenceBasis 一致、docs 两个 agent 渲染 evidenceNote 文本。",
+      "auto_verify": "npm run build && npx playwright test e2e/evidence-basis.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F08",
+      "behavior": "用户可以一键在中文和英文之间切换整站文案，刷新或跨页后语言保持不变。",
+      "verification": "中/英切换按钮切换全站文案(数据层 zh/en 双字段 + UI 文案 i18n)，写 localStorage('atlas:lang')，刷新后保持，矩阵页与详情页语言一致。i18n key 对等：所有 zh/en 文案对象 zh 与 en 字段一一对应、无单语缺失(Vitest 单测遍历 UI + DIMENSIONS + 每个 cell 的 zh/en)。Playwright e2e：点切换→断言关键文本变更 + localStorage 持久 + 跨页一致。",
+      "auto_verify": "npx vitest run tests/i18n-parity.test.ts && npm run build && npx playwright test e2e/i18n.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F09",
+      "behavior": "用户可以一键在浅色和深色主题之间切换，刷新或跨页后主题保持不变。",
+      "verification": "浅/深主题按钮切换 html[data-theme]，写 localStorage('atlas:theme')，刷新后保持，矩阵页与详情页主题一致。Playwright e2e：默认浅色→点击→断言 data-theme=dark + 背景色变化 + localStorage 持久；导航到 agent.html 后主题仍为 dark。",
+      "auto_verify": "npm run build && npx playwright test e2e/theme.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F10",
+      "behavior": "整站的图标与符号都是内联 SVG，页面运行时不出现任何 emoji 字符。",
+      "verification": "品牌 glyph、UI 图标、雷达图均为内联 SVG，跟随 currentColor/主题。Playwright 运行时探针：扫描 index 与 agent 两页渲染后 DOM 的全部文本节点，断言不含 emoji(覆盖常见 emoji Unicode 区段的正则匹配 0 命中)，且关键符号位存在 <svg> 元素。",
+      "auto_verify": "npm run build && npx playwright test e2e/svg-only.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F11",
+      "behavior": "在窄屏上矩阵可以横向滚动而不被裁切，页头在小屏下重新排布，不出现内容溢出截断。",
+      "verification": "响应式：矩阵在窄视口(如 720px/390px)外层容器 overflow-x 滚动、表格不被裁切丢列；masthead 在 ≤860px 改纵向排布、verdict 左对齐。Playwright e2e：设 390px 与 720px viewport，断言矩阵 scrollWidth>clientWidth 时容器可滚动(scrollLeft 可变)、首列仍可见、无横向 body 溢出。",
+      "auto_verify": "npm run build && npx playwright test e2e/responsive.spec.ts",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    },
+    {
+      "id": "F12",
+      "behavior": "站点有每周更新标记和变更日志，周更脚本可检测是否需要刷新并幂等地打标，不产生虚假变更。",
+      "verification": "页面顶栏/页脚渲染周标(META.updated，如 2026-W26)。weekly.mjs 支持 --check(判断当前数据是否需要刷新，已是本周→退出码表示无需刷新)与 --stamp(更新周标 + 在 CHANGELOG.md 追加带日期的条目)。幂等：同周连续 --stamp 不产生新的重复条目/diff。auto_verify 跑 --check + 幂等自检(stamp 两次后 git diff 为空或仅一条)。",
+      "auto_verify": "node scripts/checks/weekly.mjs --check",
+      "state": "not_started",
+      "evidence": "",
+      "blocked_reason": "",
+      "created_at": "2026-06-24T12:30:00Z",
+      "updated_at": "2026-06-24T12:30:00Z"
+    }
+  ]
 }

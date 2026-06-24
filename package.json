@@ -1,0 +1,24 @@
+{
+  "name": "agent-harness-atlas",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Source-level harness capability comparison of mainstream AI coding agents. Weekly.",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build-data.mjs && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@playwright/test": "1.49.1",
+    "typescript": "5.7.2",
+    "vite": "6.0.7",
+    "vitest": "2.1.8"
+  }
+}

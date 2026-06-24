@@ -51,38 +51,31 @@ help:
 # --- Project-specific targets (FILL IN with real commands for THIS project) ---
 
 setup:
-	@echo "TODO: replace with your dependency install command"
-	@echo "  e.g. npm install   |   uv sync   |   cargo build   |   bundle install"
-	@true
+	npm install
+	npx playwright install chromium
 
 dev:
-	@echo "TODO: replace with your dev runner"
-	@echo "  e.g. npm run dev   |   uvicorn app:app --reload   |   cargo run"
-	@true
+	npm run dev
 
 test:
-	@echo "TODO: replace with your test runner"
-	@echo "  e.g. npm test   |   pytest -q   |   cargo test   |   go test ./..."
-	@true
+	npx vitest run
 
 e2e:
-	@bash scripts/e2e-check.sh
+	npm run build
+	npx playwright test
 
 lint:
-	@echo "TODO: replace with your linter (or use @true if N/A)"
-	@true
+	npx biome check .
 
 typecheck:
-	@echo "TODO: replace with your type checker (or use @true if N/A)"
-	@true
+	node scripts/build-data.mjs
+	npx tsc --noEmit
 
 build:
-	@echo "TODO: replace with your build command (or use @true if N/A)"
-	@true
+	npm run build
 
 check: lint typecheck test build
 	@echo "✓ check passed"
 
 clean:
-	@echo "TODO: replace with your clean command"
-	@rm -rf .cache .tmp coverage 2>/dev/null || true
+	@rm -rf dist .vite playwright-report test-results 2>/dev/null || true
