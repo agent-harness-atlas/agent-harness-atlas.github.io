@@ -1,0 +1,9 @@
+{
+  "updated": "2026-W26",
+  "version": "4.0",
+  "sourceNote": {
+    "zh": "评分由真实源码分析（开源）或官方文档（闭源）得出，逐条可核",
+    "en": "Scores derived from real source analysis (open) or official docs (closed), each verifiable"
+  },
+  "agentOrder": ["claude-code", "codex", "pi", "opencode", "cursor", "aider", "cline", "gemini-cli"]
+}

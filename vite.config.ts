@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import { resolve } from "node:path";
 
+const root = import.meta.dirname;
+
 // Multi-page static site: index.html (matrix) + agent.html (detail).
 export default defineConfig({
   root: ".",
@@ -9,8 +11,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        index: resolve(__dirname, "index.html"),
-        agent: resolve(__dirname, "agent.html"),
+        index: resolve(root, "index.html"),
+        agent: resolve(root, "agent.html"),
       },
     },
   },
