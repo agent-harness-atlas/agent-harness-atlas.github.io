@@ -1,0 +1,148 @@
+{
+  "id": "gemini-cli",
+  "name": "Gemini CLI",
+  "vendor": "Google",
+  "lang": "TypeScript",
+  "evidenceBasis": "source",
+  "repo": "google-gemini/gemini-cli",
+  "verdict": {
+    "zh": "工程成熟度极高的开源 CLI：1M 上下文配合多阶段压缩与校验、完整 MCP/技能/扩展生态、策略引擎加操作系统级沙箱（Seatbelt/bwrap/容器）、以及真实的本地与 A2A 远程子代理系统，整体能力均衡且偏强。",
+    "en": "A highly mature open-source CLI: a 1M-token window paired with multi-stage compaction-plus-verification, a full MCP/skills/extensions ecosystem, a policy engine atop OS-level sandboxing (Seatbelt/bwrap/containers), and a genuine local + A2A remote sub-agent system — broadly strong across the board."
+  },
+  "cells": {
+    "memory": {
+      "score": 84,
+      "zh": "三层持久化：可配置的 GEMINI.md 上下文文件 + 私有 MEMORY.md 索引（按设备/inode 去重的分层发现），每轮对话以 JSONL 追加落盘支持会话恢复，外加后台抽取代理扫描历史会话自动沉淀技能与记忆（带跨实例锁与节流）。记忆改为直接编辑 markdown，无 save_memory 工具。",
+      "en": "Three layers of persistence: configurable GEMINI.md context files plus a private MEMORY.md index (hierarchical discovery deduped by device/inode), every turn appended to disk as JSONL for session resume, and a background extraction agent that mines past sessions into skills/memory (with cross-instance lock and throttle). Memory is edited directly as markdown — there is no save_memory tool.",
+      "citations": [
+        "packages/core/src/tools/memoryTool.ts:L11-L48",
+        "packages/core/src/utils/memoryDiscovery.ts:L41-L70",
+        "packages/core/src/services/chatRecordingService.ts:L550-L564",
+        "packages/core/src/services/memoryService.ts:L1126-L1155"
+      ],
+      "keep": {
+        "zh": "保留分层 GEMINI.md + MEMORY.md 索引与后台会话抽取的组合，这套自动沉淀长期记忆的设计明显强于多数同类。",
+        "en": "Keep the layered GEMINI.md + MEMORY.md index combined with background session extraction — this auto-distillation of long-term memory clearly exceeds most peers."
+      },
+      "fix": {
+        "zh": "记忆写入依赖模型直接编辑 markdown，缺少结构化/带校验的写记忆原语，易出现重复或漂移；可补一个受控的记忆写入接口。",
+        "en": "Memory writes rely on the model editing markdown directly, lacking a structured/validated write-memory primitive, which invites duplication or drift; a controlled memory-write API would help."
+      }
+    },
+    "context": {
+      "score": 91,
+      "zh": "压缩链路非常完善：先做反向 token 预算截断（最近工具输出全保、超 5 万 token 预算的旧输出落盘截断），再以 state_snapshot 提示做 LLM 摘要，并追加一轮自我校验探针防止信息丢失，最后有 token 膨胀回退保护；默认 0.5 触发、保留尾部 30%，模型窗口达 1,048,576 token。",
+      "en": "A very complete compaction pipeline: first a reverse-token-budget truncation (recent tool outputs kept whole, older outputs beyond a 50k-token budget spilled to disk and truncated), then an LLM summary driven by a state_snapshot prompt, followed by a self-verification probe to avoid information loss, with a token-inflation rollback guard; default 0.5 trigger, keeps the last 30%, on a 1,048,576-token window.",
+      "citations": [
+        "packages/core/src/context/chatCompressionService.ts:L137-L237",
+        "packages/core/src/context/chatCompressionService.ts:L361-L411",
+        "packages/core/src/core/tokenLimits.ts:L20-L39"
+      ],
+      "keep": {
+        "zh": "保留摘要后的二次校验探针与膨胀回退判断——这种自纠错压缩在同类工具里属于顶配。",
+        "en": "Keep the post-summary verification probe and inflation-rollback check — this self-correcting compaction is top-tier among peers."
+      },
+      "fix": {
+        "zh": "压缩需两次额外 LLM 调用（摘要+校验），在高频自动压缩下会带来延迟与成本；可对小历史走更轻量路径。",
+        "en": "Compaction costs two extra LLM calls (summary + verify), adding latency/cost under frequent auto-compaction; a lighter path for small histories would help."
+      }
+    },
+    "skill": {
+      "score": 89,
+      "zh": "扩展机制丰富：SkillManager 以「内置→扩展→用户→工作区」优先级发现技能并受文件夹信任门控；McpClientManager 接入完整 MCP（Stdio/SSE/StreamableHTTP 传输 + OAuth/Google 凭据），另有 25 个内置工具类与可从注册表/GitHub 安装的扩展体系。",
+      "en": "A rich extension surface: SkillManager discovers skills with builtin→extension→user→workspace precedence under folder-trust gating; McpClientManager speaks full MCP (Stdio/SSE/StreamableHTTP transports + OAuth/Google credentials), alongside 25 built-in tool classes and an extensions system installable from a registry or GitHub.",
+      "citations": [
+        "packages/core/src/skills/skillManager.ts:L50-L99",
+        "packages/core/src/tools/mcp-client-manager.ts:L37-L77",
+        "packages/core/src/tools/mcp-client.ts:L7-L62"
+      ],
+      "keep": {
+        "zh": "保留 MCP 全传输+OAuth、技能优先级覆盖与扩展注册表三位一体的开放生态，可扩展性极强。",
+        "en": "Keep the trifecta of full-transport MCP + OAuth, precedence-based skill overrides, and an extensions registry — extensibility is excellent."
+      },
+      "fix": {
+        "zh": "技能/扩展/MCP 三套加载与优先级规则较复杂，冲突仅以告警提示；可统一冲突解析与可见性诊断降低用户心智负担。",
+        "en": "Three separate loading/precedence systems (skills/extensions/MCP) are complex and conflicts are surfaced only as warnings; unifying conflict resolution and visibility diagnostics would reduce cognitive load."
+      }
+    },
+    "cost": {
+      "score": 77,
+      "zh": "成本控制有真实机制而非仅靠定价：ModelRouterService 用 Gemma/数值分类器把简单请求路由到更便宜的模型，FallbackHandler 在配额/错误时切换备用模型，压缩链路对函数响应设 5 万 token 预算并对超额工具输出落盘截断，叠加工具输出蒙版/蒸馏服务降低上下文体积。",
+      "en": "Cost control is a real mechanism, not just pricing: ModelRouterService uses Gemma/numerical classifiers to route simple requests to cheaper models, FallbackHandler switches to a fallback model on quota/errors, and compaction enforces a 50k-token budget on function responses with disk-spill truncation, plus tool-output masking/distillation services that shrink context.",
+      "citations": [
+        "packages/core/src/routing/modelRouterService.ts:L39-L63",
+        "packages/core/src/fallback/handler.ts:L44-L102",
+        "packages/core/src/context/chatCompressionService.ts:L41-L52"
+      ],
+      "keep": {
+        "zh": "保留「分类器路由 + 配额回退 + 响应预算截断」的组合，能在不牺牲体验下系统性降低 token 消耗。",
+        "en": "Keep the classifier-routing + quota-fallback + response-budget-truncation combination, which systematically lowers token spend without hurting UX."
+      },
+      "fix": {
+        "zh": "缺少面向用户的硬性预算上限/花费熔断（仅有遥测计费事件），长任务成本不可预设上限；可加每会话 token 或费用阈值。",
+        "en": "There is no user-facing hard budget cap / spend circuit-breaker (only telemetry billing events), so long-task cost has no preset ceiling; per-session token or cost thresholds would help."
+      }
+    },
+    "sandbox": {
+      "score": 88,
+      "zh": "双层防护：PolicyEngine（约 950 行）支持按优先级排序的规则、MCP 通配符匹配、子代理作用域规则、Shell 命令解析与危险/安全启发式，以及 DEFAULT/AUTO_EDIT/YOLO 审批模式；其下是真正的操作系统级沙箱——macOS Seatbelt、Linux bubblewrap（--unshare-all/--die-with-parent/只读绑定）、Windows，并可选 docker/podman/sandbox-exec 容器隔离。",
+      "en": "Two layers: PolicyEngine (~950 lines) supports priority-sorted rules, MCP wildcard matching, subagent-scoped rules, shell-command parsing with dangerous/safe heuristics, and DEFAULT/AUTO_EDIT/YOLO approval modes; beneath it sits genuine OS-level sandboxing — macOS Seatbelt, Linux bubblewrap (--unshare-all / --die-with-parent / read-only binds), Windows, plus optional docker/podman/sandbox-exec container isolation.",
+      "citations": [
+        "packages/core/src/policy/policy-engine.ts:L198-L301",
+        "packages/core/src/policy/types.ts:L10-L64",
+        "packages/core/src/sandbox/linux/bwrapArgsBuilder.ts:L33-L61",
+        "packages/cli/src/config/sandboxConfig.ts:L24-L57"
+      ],
+      "keep": {
+        "zh": "保留策略引擎与原生沙箱（Seatbelt/bwrap/容器）协同的纵深防御，权限模型既细粒度又有真实隔离支撑。",
+        "en": "Keep the defense-in-depth of the policy engine combined with native sandboxing (Seatbelt/bwrap/containers) — a fine-grained permission model backed by real isolation."
+      },
+      "fix": {
+        "zh": "OS 沙箱按平台分叉（mac/linux/windows）实现量大、维护成本高，且默认未启用需用户显式开启；可强化默认安全姿态与跨平台一致性。",
+        "en": "OS sandboxing forks per platform (mac/linux/windows) with heavy, costly-to-maintain code and is off by default until explicitly enabled; a stronger default posture and cross-platform consistency would help."
+      }
+    },
+    "multiagent": {
+      "score": 83,
+      "zh": "真实的子代理系统而非桩：AgentRegistry 注册多个内置代理（CodebaseInvestigator、Generalist、CliHelp、Browser）并支持从目录加载，统一的 AgentTool 负责查找、参数映射与委派；LocalAgentExecutor（约 1525 行）以 complete_task 收尾、受 RunConfig 限制（默认 30 轮/10 分钟）；Scheduler 对可并行工具用 Promise.all 批量并发执行；另有 a2a-server 与 remote-invocation 提供 A2A 远程子代理协议。",
+      "en": "A genuine sub-agent system, not a stub: AgentRegistry registers multiple built-in agents (CodebaseInvestigator, Generalist, CliHelp, Browser) and loads more from disk, with a unified AgentTool handling lookup, param mapping, and delegation; LocalAgentExecutor (~1525 lines) terminates via complete_task under RunConfig limits (default 30 turns / 10 min); the Scheduler runs parallelizable tools concurrently via Promise.all; and an a2a-server plus remote-invocation provide an A2A remote sub-agent protocol.",
+      "citations": [
+        "packages/core/src/agents/agent-tool.ts:L43-L95",
+        "packages/core/src/agents/registry.ts:L50-L73",
+        "packages/core/src/agents/agent-scheduler.ts:L50-L93",
+        "packages/core/src/scheduler/scheduler.ts:L463-L509"
+      ],
+      "keep": {
+        "zh": "保留本地子代理 + A2A 远程协议 + 工具级并行调度的完整链路，子代理可独立带工具注册表与策略作用域，设计成熟。",
+        "en": "Keep the full pipeline of local sub-agents + A2A remote protocol + tool-level parallel scheduling; sub-agents carry their own tool registry and policy scope — a mature design."
+      },
+      "fix": {
+        "zh": "并行发生在单代理的工具批次层面，多个子代理之间默认仍是顺序委派，缺少原生的多代理并行扇出与共享黑板；可增加并发子代理编排。",
+        "en": "Parallelism happens at the tool-batch level within one agent; multiple sub-agents are still delegated sequentially by default, lacking native multi-agent parallel fan-out and a shared blackboard; concurrent sub-agent orchestration would help."
+      }
+    }
+  },
+  "keyFiles": [
+    "packages/core/src/context/chatCompressionService.ts",
+    "packages/core/src/core/tokenLimits.ts",
+    "packages/core/src/tools/memoryTool.ts",
+    "packages/core/src/utils/memoryDiscovery.ts",
+    "packages/core/src/services/chatRecordingService.ts",
+    "packages/core/src/services/memoryService.ts",
+    "packages/core/src/skills/skillManager.ts",
+    "packages/core/src/tools/mcp-client-manager.ts",
+    "packages/core/src/tools/mcp-client.ts",
+    "packages/core/src/routing/modelRouterService.ts",
+    "packages/core/src/fallback/handler.ts",
+    "packages/core/src/policy/policy-engine.ts",
+    "packages/core/src/policy/types.ts",
+    "packages/core/src/sandbox/linux/bwrapArgsBuilder.ts",
+    "packages/core/src/sandbox/macos/MacOsSandboxManager.ts",
+    "packages/cli/src/config/sandboxConfig.ts",
+    "packages/core/src/agents/agent-tool.ts",
+    "packages/core/src/agents/registry.ts",
+    "packages/core/src/agents/agent-scheduler.ts",
+    "packages/core/src/agents/local-executor.ts",
+    "packages/core/src/scheduler/scheduler.ts"
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "id": "opencode",
+  "name": "opencode",
+  "vendor": "SST / 开源",
+  "lang": "TypeScript",
+  "evidenceBasis": "source",
+  "repo": "sst/opencode",
+  "verdict": {
+    "zh": "opencode 在可扩展性（技能/自定义子代理/MCP/插件）与显式权限模型上表现突出，配合成熟的预算感知压缩；但缺乏 OS 级沙箱与语义化长期记忆，记忆与成本控制偏向基础设施而非智能层。",
+    "en": "opencode excels at extensibility (skills/custom subagents/MCP/plugins) and an explicit permission model, paired with a mature budget-aware compaction pipeline; it lacks OS-level sandboxing and semantic long-term memory, so memory and cost control lean on plumbing rather than an intelligence layer."
+  },
+  "cells": {
+    "memory": {
+      "score": 50,
+      "zh": "会话/消息/分片以 JSON 持久化到磁盘并带版本迁移，子代理会话可通过 task_id 续接；跨会话记忆主要靠 AGENTS.md/CLAUDE.md/CONTEXT.md 指令文件（全局+项目向上查找）。但没有向量库或自动语义记忆层，记忆完全是用户自管的文件加可恢复的会话存储。",
+      "en": "Sessions/messages/parts are persisted as JSON on disk with versioned migrations, and subagent sessions can be resumed via task_id; cross-session memory relies on AGENTS.md/CLAUDE.md/CONTEXT.md instruction files (global + project walk-up). There is no vector store or automatic semantic memory layer — memory is user-curated files plus resumable session storage.",
+      "citations": [
+        "packages/opencode/src/storage/storage.ts:L53-L59",
+        "packages/opencode/src/storage/storage.ts:L213-L243",
+        "packages/opencode/src/session/instruction.ts:L60-L68",
+        "packages/opencode/src/session/instruction.ts:L110-L169",
+        "packages/opencode/src/tool/task.ts:L47-L51"
+      ],
+      "keep": {
+        "zh": "可靠的磁盘会话持久化（含迁移、读写锁）加分层指令文件加载，构成稳健的可恢复上下文。",
+        "en": "Reliable disk session persistence (with migrations and read/write locks) plus layered instruction-file loading gives robust resumable context."
+      },
+      "fix": {
+        "zh": "增加自动语义/长期记忆（如跨会话事实抽取或向量检索），减少对手写 AGENTS.md 的依赖。",
+        "en": "Add automatic semantic/long-term memory (cross-session fact extraction or vector retrieval) to reduce reliance on hand-written AGENTS.md."
+      }
+    },
+    "context": {
+      "score": 86,
+      "zh": "上下文管理非常成熟：overflow.ts 基于模型 context/input 上限与保留输出预算计算可用窗口并自动判定溢出；compaction.ts 实现按轮次的尾部保留（带 token 预算与 splitTurn 拆分）、对旧工具输出的剪枝释放、专用 compaction 代理生成可锚定且可增量更新的摘要、媒体剥离与溢出续接；处理器在溢出时自动触发压缩。",
+      "en": "Context management is mature: overflow.ts computes the usable window from model context/input limits minus a reserved output budget and auto-detects overflow; compaction.ts implements turn-based tail preservation (with token budgets and splitTurn), pruning of old tool outputs to free space, a dedicated compaction agent that produces an anchored, incrementally-updated summary, plus media stripping and overflow continuation; the processor auto-triggers compaction on overflow.",
+      "citations": [
+        "packages/opencode/src/session/overflow.ts:L10-L34",
+        "packages/opencode/src/session/compaction.ts:L90-L249",
+        "packages/opencode/src/session/compaction.ts:L251-L297",
+        "packages/opencode/src/session/compaction.ts:L299-L435",
+        "packages/core/src/session/compaction.ts:L166-L219",
+        "packages/opencode/src/session/processor.ts:L750-L755"
+      ],
+      "keep": {
+        "zh": "多策略协同（压缩+剪枝+尾部保留+媒体剥离+锚定摘要）且预算感知，远超单纯依赖模型。",
+        "en": "Multi-strategy, budget-aware design (compaction + pruning + tail preservation + media stripping + anchored summaries) goes well beyond just leaning on the model."
+      },
+      "fix": {
+        "zh": "token 计数仍用 length/4 估算，压缩边界判断可能偏差；接入精确分词器会更稳。",
+        "en": "Token counting still uses a length/4 estimate, which can skew compaction thresholds; wiring in an exact tokenizer would be more robust."
+      }
+    },
+    "skill": {
+      "score": 90,
+      "zh": "扩展机制堪称标杆：技能从 .claude/.agents/opencode 目录、config 路径乃至远程 URL 发现 SKILL.md，按需加载内容与文件且受权限门控；MCP 客户端支持 stdio/SSE/HTTP、OAuth、分页与工具转换；插件系统支持 npm/文件插件、兼容性校验与钩子；自定义工具可来自插件或配置目录（tool/tools 目录扫描）。",
+      "en": "The extension mechanism is best-in-class: skills are discovered as SKILL.md across .claude/.agents/opencode dirs, config paths, and even remote URLs, loaded on demand and permission-gated; the MCP client supports stdio/SSE/HTTP, OAuth, pagination and tool conversion; the plugin system handles npm/file plugins, compatibility checks and hooks; custom tools can come from plugins or config tool/ dirs.",
+      "citations": [
+        "packages/opencode/src/skill/index.ts:L173-L233",
+        "packages/opencode/src/skill/index.ts:L289-L315",
+        "packages/opencode/src/tool/skill.ts:L12-L70",
+        "packages/opencode/src/mcp/catalog.ts:L42-L82",
+        "packages/opencode/src/mcp/index.ts:L632-L655",
+        "packages/opencode/src/plugin/loader.ts:L86-L145",
+        "packages/opencode/src/tool/registry.ts:L114-L193"
+      ],
+      "keep": {
+        "zh": "技能/MCP/插件/自定义工具四条扩展通道齐备，并兼容 Claude/Agents 生态，覆盖面极广。",
+        "en": "Four extension channels (skills/MCP/plugins/custom tools) all present and Claude/Agents-ecosystem compatible — extremely broad coverage."
+      },
+      "fix": {
+        "zh": "插件加载失败会被 Bun 永久缓存（仅文件插件可重试一次），可加入更强的热重载/隔离与版本沙箱。",
+        "en": "Failed plugin imports are permanently cached by Bun (only file plugins retry once); stronger hot-reload/isolation and version sandboxing would help."
+      }
+    },
+    "cost": {
+      "score": 60,
+      "zh": "有实在的省钱手段：压缩时对工具输出剪枝、媒体剥离与 TOOL_OUTPUT_MAX_CHARS 截断、按 session 设置 prompt 缓存键与多家 provider 的 cache_control、逐消息累计 cost。但 token 计数仅 length/4 粗估，且未见硬性预算/花费上限强制；成本更多是被动追踪而非主动封顶。",
+      "en": "There are real savings levers: pruning tool outputs during compaction, media stripping and TOOL_OUTPUT_MAX_CHARS truncation, per-session prompt cache keys and cross-provider cache_control, and per-message cost accumulation. But token counting is a crude length/4 estimate and there is no hard budget/spend cap enforcement — cost is tracked passively rather than capped.",
+      "citations": [
+        "packages/core/src/util/token.ts:L3-L5",
+        "packages/opencode/src/session/compaction.ts:L40-L41",
+        "packages/opencode/src/session/compaction.ts:L251-L297",
+        "packages/opencode/src/session/processor.ts:L708-L727",
+        "packages/opencode/src/provider/transform.ts:L329-L344"
+      ],
+      "keep": {
+        "zh": "多 provider 的 prompt 缓存 + 工具输出剪枝/截断显著降低重复上下文与长输出成本。",
+        "en": "Cross-provider prompt caching plus tool-output pruning/truncation meaningfully cut repeated-context and long-output costs."
+      },
+      "fix": {
+        "zh": "用精确分词器替代 length/4，并提供每会话/每天的硬性花费上限与超限熔断。",
+        "en": "Replace length/4 with an exact tokenizer and add hard per-session/per-day spend caps with a cutoff on overrun."
+      }
+    },
+    "sandbox": {
+      "score": 65,
+      "zh": "权限模型显式且细粒度：通配规则按 permission+pattern 评估 allow/ask/deny，支持 always 规则、会话级批准与拒绝级联；arity.ts 解析 bash 命令前缀以做命令级授权；每个代理有默认权限（读 .env 询问、external_directory 白名单、plan 模式禁编辑），外部目录与 shell 访问均需询问。但没有 OS 级进程隔离（无 seatbelt/landlock/bwrap），项目的 sandbox 只是 git worktree，批准后命令以宿主全权运行。",
+      "en": "The permission model is explicit and granular: wildcard rules evaluate allow/ask/deny by permission+pattern, with always-rules, session-scoped approvals and cascading rejects; arity.ts parses bash command prefixes for command-level authorization; each agent carries default permissions (read .env asks, external_directory whitelist, plan mode denies edits), and external-directory/shell access both prompt. But there is no OS-level process isolation (no seatbelt/landlock/bwrap) — project 'sandboxes' are just git worktrees, and once approved commands run with full host privileges.",
+      "citations": [
+        "packages/opencode/src/permission/index.ts:L39-L49",
+        "packages/opencode/src/permission/index.ts:L78-L178",
+        "packages/opencode/src/permission/arity.ts:L1-L23",
+        "packages/opencode/src/agent/agent.ts:L119-L181",
+        "packages/opencode/src/tool/external-directory.ts:L15-L45",
+        "packages/opencode/src/tool/shell.ts:L263-L291"
+      ],
+      "keep": {
+        "zh": "权限规则极细：通配+命令前缀 arity+每代理默认+外部目录门控+子代理继承，可控性强。",
+        "en": "Very fine-grained rules: wildcard + command-prefix arity + per-agent defaults + external-directory gating + subagent inheritance give strong control."
+      },
+      "fix": {
+        "zh": "缺真正的 OS 沙箱；可叠加 seatbelt/landlock/容器化把已批准命令限制在受控文件系统/网络内。",
+        "en": "Missing a true OS sandbox; layering seatbelt/landlock/containerization would confine approved commands to a controlled filesystem/network."
+      }
+    },
+    "multiagent": {
+      "score": 83,
+      "zh": "子代理能力强：task 工具按 subagent_type 派生子会话并隔离权限，支持前台/后台模式（后台异步返回并在完成时通知、可注入结果、可取消），通过 task_id 续接同一子代理会话；内置 general/explore 子代理并鼓励并行执行多单元工作；子代理权限从父会话继承 deny/external_directory 并默认收紧 todowrite/task；registry 向主代理罗列可用代理类型。",
+      "en": "Subagent capability is strong: the task tool derives a child session per subagent_type with isolated permissions, supports foreground/background modes (background returns async, notifies on completion, can inject results and be cancelled), and resumes the same subagent session via task_id; built-in general/explore subagents encourage running multiple units of work in parallel; child permissions inherit deny/external_directory from the parent and default-tighten todowrite/task; the registry lists available agent types to the primary agent.",
+      "citations": [
+        "packages/opencode/src/tool/task.ts:L81-L158",
+        "packages/opencode/src/tool/task.ts:L242-L334",
+        "packages/opencode/src/agent/agent.ts:L182-L218",
+        "packages/opencode/src/agent/subagent-permissions.ts:L14-L27",
+        "packages/opencode/src/tool/registry.ts:L252-L265"
+      ],
+      "keep": {
+        "zh": "前台/后台子代理 + 会话续接 + 权限继承 + 完成通知/结果注入，协调机制完整。",
+        "en": "Foreground/background subagents + session resumption + permission inheritance + completion notification/result injection make for complete coordination."
+      },
+      "fix": {
+        "zh": "后台子代理仍需实验开关；可强化跨子代理的共享状态/去重与并行结果聚合。",
+        "en": "Background subagents still sit behind an experimental flag; shared cross-subagent state/dedup and parallel result aggregation could be strengthened."
+      }
+    }
+  },
+  "keyFiles": [
+    "packages/opencode/src/session/compaction.ts",
+    "packages/opencode/src/session/overflow.ts",
+    "packages/opencode/src/session/summary.ts",
+    "packages/opencode/src/session/instruction.ts",
+    "packages/opencode/src/session/processor.ts",
+    "packages/core/src/session/compaction.ts",
+    "packages/opencode/src/skill/index.ts",
+    "packages/opencode/src/tool/skill.ts",
+    "packages/opencode/src/mcp/index.ts",
+    "packages/opencode/src/mcp/catalog.ts",
+    "packages/opencode/src/plugin/index.ts",
+    "packages/opencode/src/plugin/loader.ts",
+    "packages/opencode/src/tool/registry.ts",
+    "packages/opencode/src/permission/index.ts",
+    "packages/opencode/src/permission/arity.ts",
+    "packages/opencode/src/agent/agent.ts",
+    "packages/opencode/src/agent/subagent-permissions.ts",
+    "packages/opencode/src/tool/task.ts",
+    "packages/opencode/src/storage/storage.ts"
+  ]
+}

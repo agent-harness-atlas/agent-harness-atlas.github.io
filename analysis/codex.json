@@ -1,0 +1,138 @@
+{
+  "id": "codex",
+  "name": "Codex CLI",
+  "vendor": "OpenAI",
+  "lang": "Rust",
+  "evidenceBasis": "source",
+  "repo": "openai/codex",
+  "verdict": {
+    "zh": "Codex 以多平台原生沙箱（Seatbelt/Landlock/bwrap + `execpolicy` 规则引擎）和成熟的上下文压缩为最大亮点，但成本控制偏弱——缺乏显式预算/花费上限，只能靠 token 预算提醒与输出截断间接约束。",
+    "en": "Codex stands out for its multi-platform native sandbox (Seatbelt/Landlock/bwrap plus the `execpolicy` rule engine) and mature context compaction, but cost control is its weak spot—there is no explicit budget/spend cap, only indirect token-budget reminders and output truncation."
+  },
+  "cells": {
+    "memory": {
+      "score": 71,
+      "zh": "拥有原生的跨会话长期记忆：`ext/memories` 在 `$CODEX_HOME/memories` 下提供 `list`/`read`/`search`/`add_ad_hoc_note` 文件级工具，并由 `memories/write` 的两阶段（phase1/phase2）整合管线在会话启动时异步固化记忆。",
+      "en": "Ships a native cross-session long-term memory layer: `ext/memories` exposes file-backed `list`/`read`/`search`/`add_ad_hoc_note` tools under `$CODEX_HOME/memories`, and the two-phase (phase1/phase2) consolidation pipeline in `memories/write` persists memories asynchronously at session startup.",
+      "citations": [
+        "codex-rs/ext/memories/src/lib.rs:L11-L22",
+        "codex-rs/ext/memories/src/local.rs:L29-L36",
+        "codex-rs/memories/write/src/start.rs:L22-L35"
+      ],
+      "keep": {
+        "zh": "记忆是真正的磁盘持久化（CODEX_HOME/memories），含读/搜/写+整合管线和 `MemoryCitation` 引用溯源，远超普通 agent 的薄记忆。",
+        "en": "Memory is genuinely disk-persistent (CODEX_HOME/memories) with read/search/write plus a consolidation pipeline and `MemoryCitation` provenance—well beyond the thin memory of a typical agent."
+      },
+      "fix": {
+        "zh": "整套记忆受 `Feature::MemoryTool` 特性开关与 `use_memories` 配置门控，且迁移 0035 直接 DROP 了旧记忆表，显示该子系统仍在演进、默认未必启用。",
+        "en": "The whole subsystem is gated behind the `Feature::MemoryTool` flag and `use_memories` config, and migration 0035 outright DROPs the old memory tables, signaling an evolving, not-on-by-default design."
+      }
+    },
+    "context": {
+      "score": 88,
+      "zh": "上下文管理非常成熟：`compact.rs` 支持本地/远程（`compact_remote_v2`）与 token 预算三种压缩，区分 mid-turn 与 pre-turn 的初始上下文注入策略，`context_window.rs` 按 `Total`/`BodyAfterPrefix` 作用域计算 `tokens_until_compaction` 并自动触发压缩。",
+      "en": "Context management is highly mature: `compact.rs` supports local/remote (`compact_remote_v2`) and token-budget compaction, distinguishes mid-turn vs pre-turn initial-context injection strategies, and `context_window.rs` computes `tokens_until_compaction` per `Total`/`BodyAfterPrefix` scope to auto-trigger compaction.",
+      "citations": [
+        "codex-rs/core/src/compact.rs:L55-L68",
+        "codex-rs/core/src/session/context_window.rs:L24-L92",
+        "codex-rs/core/src/compact_token_budget.rs:L44-L62"
+      ],
+      "keep": {
+        "zh": "压缩有完整生命周期（pre/post-compact 钩子）、可配置自动压缩阈值与作用域，并提供本地与服务端摘要两条路径，可观测性强。",
+        "en": "Compaction has a full lifecycle (pre/post-compact hooks), configurable auto-compact thresholds and scopes, and both local and server-side summarization paths—highly observable."
+      },
+      "fix": {
+        "zh": "多种压缩实现（local / remote / remote_v2 / token_budget）并存增加了复杂度，行为依赖模型训练假设（如 summary 必须为最后一项），跨实现一致性维护成本高。",
+        "en": "Multiple coexisting compaction implementations (local / remote / remote_v2 / token_budget) add complexity, and behavior depends on model-training assumptions (e.g. the summary must be the last item), raising cross-implementation consistency cost."
+      }
+    },
+    "skill": {
+      "score": 84,
+      "zh": "扩展面广：`core-skills` 提供 loader/render/injection/service 的文件级 Skill 体系，`skills` crate 将内置系统 Skill 安装到 `CODEX_HOME/skills/.system`，并与 MCP（`mcp_tool_call.rs` 2200+ 行）、插件安装和动态工具注册表协同。",
+      "en": "Broad extension surface: `core-skills` provides a file-based skill system (loader/render/injection/service), the `skills` crate installs embedded system skills into `CODEX_HOME/skills/.system`, and it integrates with MCP (`mcp_tool_call.rs`, 2200+ lines), plugin installation, and a dynamic tool registry.",
+      "citations": [
+        "codex-rs/core-skills/src/lib.rs:L1-L36",
+        "codex-rs/skills/src/lib.rs:L10-L31",
+        "codex-rs/core/src/context/available_skills_instructions.rs:L24-L48"
+      ],
+      "keep": {
+        "zh": "Skill 是磁盘可发现的 Markdown 资产，含元数据预算与渲染注入，叠加 MCP + 插件 + 扩展 API（ToolContributor），扩展机制层次清晰且原生。",
+        "en": "Skills are disk-discoverable Markdown assets with metadata budgeting and rendered injection, layered on MCP + plugins + an extension API (ToolContributor)—a clear, native extension mechanism."
+      },
+      "fix": {
+        "zh": "Skill 主要是提示词注入式的轻量扩展，缺少独立的版本/依赖与沙箱隔离声明，能力深度依赖底层 shell/工具而非 Skill 自身。",
+        "en": "Skills are mostly lightweight prompt-injection extensions lacking independent versioning/dependency and sandbox-isolation declarations; their depth relies on the underlying shell/tools rather than the skill itself."
+      }
+    },
+    "cost": {
+      "score": 66,
+      "zh": "成本控制以 token 为主：`TokenBudgetConfig`/`RolloutBudgetConfig` 提供剩余 token 提醒阈值与模板，`output-truncation` 按字节/token 预算中段截断工具输出，`get_context_remaining` 工具让模型自查剩余预算。",
+      "en": "Cost control is token-centric: `TokenBudgetConfig`/`RolloutBudgetConfig` provide remaining-token reminder thresholds and templates, `output-truncation` middle-truncates tool output by byte/token budget, and the `get_context_remaining` tool lets the model self-check remaining budget.",
+      "citations": [
+        "codex-rs/core/src/config/mod.rs:L1087-L1114",
+        "codex-rs/utils/output-truncation/src/lib.rs:L12-L29",
+        "codex-rs/core/src/tools/handlers/get_context_remaining.rs:L18-L36"
+      ],
+      "keep": {
+        "zh": "通过自动压缩 + 输出截断 + token 预算提醒形成自动化的 token 节流闭环，并暴露剩余预算工具，避免无声爆窗。",
+        "en": "Combines auto-compaction + output truncation + token-budget reminders into an automated token-throttling loop, and exposes a remaining-budget tool to avoid silent context overflow."
+      },
+      "fix": {
+        "zh": "缺少显式的货币花费核算或硬性预算上限（无 per-model 定价/花费封顶），成本控制分散在多处、偏间接，无法直接限制美元开销。",
+        "en": "Lacks explicit monetary spend accounting or a hard budget cap (no per-model pricing/spend ceiling); cost control is scattered and indirect, unable to directly bound dollar spend."
+      }
+    },
+    "sandbox": {
+      "score": 94,
+      "zh": "权限/沙箱是绝对强项：`SandboxPolicy` 区分 `read-only`/`workspace-write`/`danger-full-access`/`external-sandbox` 并细化可写根与网络开关，落地为 macOS Seatbelt（SBPL）、Linux Landlock+bwrap、Windows 沙箱，外加 `execpolicy` 命令规则引擎做逐命令裁决。",
+      "en": "Permissions/sandbox is the clear strength: `SandboxPolicy` distinguishes `read-only`/`workspace-write`/`danger-full-access`/`external-sandbox` with fine-grained writable roots and network toggles, realized via macOS Seatbelt (SBPL), Linux Landlock+bwrap, and a Windows sandbox, plus the `execpolicy` command rule engine for per-command adjudication.",
+      "citations": [
+        "codex-rs/protocol/src/protocol.rs:L955-L1006",
+        "codex-rs/sandboxing/src/seatbelt.rs:L586-L621",
+        "codex-rs/core/src/exec_policy.rs:L1-L51"
+      ],
+      "keep": {
+        "zh": "三平台原生 OS 级隔离 + 声明式策略 + 可写根内对 `.git/hooks` 等提权路径的只读保护 + 网络代理策略，安全模型可配置、可审计、纵深防御。",
+        "en": "Native OS-level isolation across three platforms + declarative policy + read-only protection of privilege-escalation paths like `.git/hooks` within writable roots + network-proxy policy—a configurable, auditable, defense-in-depth security model."
+      },
+      "fix": {
+        "zh": "策略表达力强但配置面庞大（exec_policy.rs 超 1000 行、多套 SBPL/规则文件），上手与心智成本较高，且强隔离依赖具体 OS 特性可用性。",
+        "en": "Highly expressive but with a large config surface (exec_policy.rs exceeds 1000 lines, multiple SBPL/rule files), implying a steep learning/mental cost, and strong isolation depends on the availability of specific OS features."
+      }
+    },
+    "multiagent": {
+      "score": 78,
+      "zh": "具备原生子代理体系：`codex_delegate.rs` 可启动可交互的子 Codex 线程并打通 IO 通道，`multi_agents_v2` 暴露 spawn/send_message/wait/interrupt/list/followup 协作工具与加密的 `InterAgentCommunication`，`agent/control.rs` 管理注册表、角色与状态。",
+      "en": "Has a native sub-agent system: `codex_delegate.rs` launches interactive sub-Codex threads with wired IO channels, `multi_agents_v2` exposes spawn/send_message/wait/interrupt/list/followup collaboration tools plus encrypted `InterAgentCommunication`, and `agent/control.rs` manages the registry, roles, and status.",
+      "citations": [
+        "codex-rs/core/src/codex_delegate.rs:L63-L76",
+        "codex-rs/core/src/tools/handlers/multi_agents_v2.rs:L28-L55",
+        "codex-rs/core/src/tools/handlers/multi_agents_v2/spawn.rs:L39-L68"
+      ],
+      "keep": {
+        "zh": "支持带角色/模型覆盖的子代理派生、fork 历史模式、批量 `spawn_agents_on_csv` 作业与代理间消息协调，是真正可编排的多代理而非外挂脚本。",
+        "en": "Supports role/model-override sub-agent spawning, fork-history modes, batch `spawn_agents_on_csv` jobs, and inter-agent message coordination—genuinely orchestrable multi-agent rather than bolted-on scripting."
+      },
+      "fix": {
+        "zh": "存在 v1/v2 两套多代理实现并行演进，特性受 `multi_agent_v2` 开关门控，子代理深度与父子审批转交逻辑复杂，仍处于快速迭代期。",
+        "en": "Two multi-agent implementations (v1/v2) evolve in parallel, the feature is gated behind a `multi_agent_v2` flag, and sub-agent depth plus parent-child approval forwarding logic is complex—still in rapid iteration."
+      }
+    }
+  },
+  "keyFiles": [
+    "codex-rs/core/src/exec_policy.rs",
+    "codex-rs/sandboxing/src/seatbelt.rs",
+    "codex-rs/protocol/src/protocol.rs",
+    "codex-rs/core/src/compact.rs",
+    "codex-rs/core/src/session/context_window.rs",
+    "codex-rs/core/src/compact_token_budget.rs",
+    "codex-rs/ext/memories/src/lib.rs",
+    "codex-rs/memories/write/src/lib.rs",
+    "codex-rs/core/src/codex_delegate.rs",
+    "codex-rs/core/src/tools/handlers/multi_agents_v2.rs",
+    "codex-rs/core-skills/src/lib.rs",
+    "codex-rs/core/src/mcp_tool_call.rs",
+    "codex-rs/core/src/tools/registry.rs",
+    "codex-rs/utils/output-truncation/src/lib.rs"
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "id": "pi",
+  "name": "Pi",
+  "vendor": "earendil-works",
+  "lang": "TypeScript",
+  "evidenceBasis": "source",
+  "repo": "earendil-works/pi",
+  "verdict": {
+    "zh": "Pi 是一个极简但工程扎实的可自我扩展编码代理框架，强项在于成熟的上下文压缩/分支摘要与符合 Agent Skills 规范的技能/扩展体系；记忆、沙箱与多代理能力存在但偏轻量或以示例扩展形式提供。",
+    "en": "Pi is a minimal yet engineering-solid, self-extensible coding-agent harness whose strengths are mature context compaction/branch-summarization and a spec-compliant skills/extension system; memory, sandbox, and multi-agent capabilities exist but are lighter or delivered as example extensions."
+  },
+  "cells": {
+    "memory": {
+      "score": 58,
+      "zh": "持久化以 JSONL 会话树为核心：追加式存储、父子分支、可从某叶子分叉出带 parentSession 链的新会话，实现跨会话恢复与续接；项目记忆通过逐级向上发现并加载 AGENTS.md/CLAUDE.md 上下文文件注入系统提示。但没有自动语义记忆、向量库或跨会话知识沉淀，长期记忆本质是会话续存加项目说明文件。",
+      "en": "Persistence centers on a JSONL session tree: append-only storage, parent/child branches, and forking a new session from any leaf with a parentSession chain, enabling cross-session resume/continuation; project memory is injected by walking ancestors to load AGENTS.md/CLAUDE.md context files into the system prompt. There is no automatic semantic memory, vector store, or learned cross-session knowledge — long-term memory is essentially session persistence plus project instruction files.",
+      "citations": [
+        "packages/agent/src/harness/session/jsonl-storage.ts:L161-L259",
+        "packages/agent/src/harness/session/jsonl-storage.ts:L275-L292",
+        "packages/coding-agent/src/core/session-manager.ts:L1289-L1328",
+        "packages/coding-agent/src/core/resource-loader.ts:L66-L122",
+        "packages/coding-agent/src/core/system-prompt.ts:L153-L166"
+      ],
+      "keep": {
+        "zh": "保留稳健的 append-only JSONL 会话树与分叉/父会话链，以及自动发现 AGENTS.md/CLAUDE.md 的项目上下文加载。",
+        "en": "Keep the robust append-only JSONL session tree with forking/parent-session chaining and the auto-discovery of AGENTS.md/CLAUDE.md project context."
+      },
+      "fix": {
+        "zh": "增加可选的跨会话长期记忆（如可检索的记忆条目或向量召回），让用户偏好与事实能在不同会话间自动沉淀复用。",
+        "en": "Add optional cross-session long-term memory (e.g., retrievable memory entries or vector recall) so user preferences and facts accrue and are reused automatically across sessions."
+      }
+    },
+    "context": {
+      "score": 89,
+      "zh": "上下文管理是该框架最成熟的部分：基于 usage.totalTokens 估算上下文、按阈值 shouldCompact 触发，findCutPoint 在不切断工具结果的前提下回溯保留近 keepRecentTokens 的消息，结构化摘要提示（Goal/Progress/Next Steps 等）并支持基于上一摘要的增量更新；额外实现树导航时的分支摘要，避免切换分支丢失上下文，自动压缩带 abort 与扩展钩子。",
+      "en": "Context management is the harness's most mature area: it estimates context from usage.totalTokens, triggers via a shouldCompact threshold, uses findCutPoint to walk back and keep ~keepRecentTokens of recent messages without severing tool results, drives structured summary prompts (Goal/Progress/Next Steps), and supports iterative updates against a prior summary; it additionally generates branch summaries during tree navigation so switching branches doesn't lose context, with abortable auto-compaction and extension hooks.",
+      "citations": [
+        "packages/coding-agent/src/core/compaction/compaction.ts:L116-L126",
+        "packages/coding-agent/src/core/compaction/compaction.ts:L222-L228",
+        "packages/coding-agent/src/core/compaction/compaction.ts:L392-L454",
+        "packages/coding-agent/src/core/compaction/branch-summarization.ts:L287-L371",
+        "packages/coding-agent/src/core/agent-session.ts:L1936-L1999"
+      ],
+      "keep": {
+        "zh": "保留切点检测、结构化+增量摘要与分支摘要这一套完整、可被扩展覆盖的压缩流水线。",
+        "en": "Keep the complete, extension-overridable compaction pipeline: cut-point detection, structured + iterative summaries, and branch summarization."
+      },
+      "fix": {
+        "zh": "token 估算用 chars/4 启发式偏粗，可引入真实分词器或按模型校准，并对工具结果做更细的中段裁剪以进一步省 token。",
+        "en": "The chars/4 token heuristic is coarse; add a real tokenizer or per-model calibration and finer mid-stream pruning of tool results to save more tokens."
+      }
+    },
+    "skill": {
+      "score": 90,
+      "zh": "技能/扩展体系强大且标准化：完整实现 Agent Skills 规范（SKILL.md + frontmatter，名称/描述校验、忽略规则、符号链接去重、命名冲突诊断），并以 XML 注入系统提示供模型按描述加载；扩展 API 面广（registerTool/registerCommand/registerFlag/registerShortcut/registerProvider/registerMessageRenderer）并提供 tool_call、tool_result、context、before_provider_request 等钩子，examples/ 下数十个真实扩展，框架可自我扩展。",
+      "en": "The skill/extension system is powerful and standardized: a full Agent Skills implementation (SKILL.md + frontmatter, name/description validation, ignore rules, symlink dedup, name-collision diagnostics) injected as XML into the system prompt for model-driven loading; a broad extension API (registerTool/registerCommand/registerFlag/registerShortcut/registerProvider/registerMessageRenderer) plus tool_call, tool_result, context, and before_provider_request hooks, with dozens of real extensions under examples/ — the harness is self-extensible.",
+      "citations": [
+        "packages/coding-agent/src/core/skills.ts:L92-L127",
+        "packages/coding-agent/src/core/skills.ts:L335-L361",
+        "packages/coding-agent/src/core/skills.ts:L387-L487",
+        "packages/coding-agent/src/core/extensions/types.ts:L1177-L1209",
+        "packages/coding-agent/src/core/extensions/types.ts:L1337-L1337"
+      ],
+      "keep": {
+        "zh": "保留对 Agent Skills 规范的严格实现与宽广、类型安全的扩展/钩子 API 以及丰富示例。",
+        "en": "Keep the strict Agent Skills spec implementation and the broad, type-safe extension/hook API with rich examples."
+      },
+      "fix": {
+        "zh": "技能默认靠模型读取 SKILL.md 文件触发，可补充更强的运行时校验/沙箱化与版本/依赖管理，降低不可信技能的供应链风险。",
+        "en": "Skills rely on the model reading SKILL.md files; add stronger runtime validation/sandboxing and versioning/dependency management to reduce supply-chain risk from untrusted skills."
+      }
+    },
+    "cost": {
+      "score": 72,
+      "zh": "成本控制覆盖多个层面：跨 Anthropic/OpenAI/Bedrock/Mistral 的 prompt 缓存（cacheRetention short/long/none，含 PI_CACHE_RETENTION 环境变量与 24h/1h 长缓存），工具输出按 2000 行/50KB 双限截断，压缩直接降低上下文 token，并对 usage（input/output/cacheRead/cacheWrite/cost）逐条统计。子代理以 --no-session 隔离上下文进一步省钱。缺少全局预算上限或硬性花费熔断。",
+      "en": "Cost control spans several layers: prompt caching across Anthropic/OpenAI/Bedrock/Mistral (cacheRetention short/long/none, with the PI_CACHE_RETENTION env var and 24h/1h long retention), tool-output truncation at a 2000-line/50KB dual limit, compaction that directly lowers context tokens, and per-message usage accounting (input/output/cacheRead/cacheWrite/cost). Subagents isolate context with --no-session to save further. There is no global budget cap or hard spend cutoff.",
+      "citations": [
+        "packages/ai/src/api/anthropic-messages.ts:L46-L68",
+        "packages/ai/src/types.ts:L506-L546",
+        "packages/coding-agent/src/core/tools/truncate.ts:L1-L45",
+        "packages/coding-agent/src/core/compaction/compaction.ts:L132-L138",
+        "packages/coding-agent/examples/extensions/subagent/index.ts:L294-L294"
+      ],
+      "keep": {
+        "zh": "保留多供应商 prompt 缓存、双限输出截断与细粒度 usage/cost 统计的组合。",
+        "en": "Keep the combination of multi-provider prompt caching, dual-limit output truncation, and fine-grained usage/cost accounting."
+      },
+      "fix": {
+        "zh": "增加可配置的会话/日级花费预算与硬性熔断，并在接近上限时提示或自动降级模型。",
+        "en": "Add configurable per-session/daily spend budgets with a hard cutoff, plus warnings or automatic model downgrade as limits approach."
+      }
+    },
+    "sandbox": {
+      "score": 60,
+      "zh": "核心内置的是项目信任模型：检测 cwd 及其祖先下需信任的项目资源（settings/extensions/skills/prompts/SYSTEM.md 及 .agents/skills），用带文件锁的 trust.json 记忆“信任/不信任/父目录”决策，未信任则不加载项目级扩展/包/技能。真正的 OS 级隔离（macOS sandbox-exec / Linux bubblewrap，网络与读写白名单）以示例扩展形式提供，权限门与受保护路径同样是示例扩展，非默认强制。",
+      "en": "The built-in core is a project-trust model: it detects trust-requiring project resources under cwd and its ancestors (settings/extensions/skills/prompts/SYSTEM.md and .agents/skills), records trust/untrust/parent decisions in a lock-guarded trust.json, and withholds project-level extensions/packages/skills when untrusted. Actual OS-level isolation (macOS sandbox-exec / Linux bubblewrap with network and read/write allowlists) ships as an example extension, as do the permission gate and protected-paths guards — not enforced by default.",
+      "citations": [
+        "packages/coding-agent/src/core/trust-manager.ts:L29-L37",
+        "packages/coding-agent/src/core/trust-manager.ts:L184-L244",
+        "packages/coding-agent/src/core/project-trust.ts:L46-L96",
+        "packages/coding-agent/examples/extensions/sandbox/index.ts:L44-L199",
+        "packages/coding-agent/examples/extensions/permission-gate.ts:L10-L33"
+      ],
+      "keep": {
+        "zh": "保留带文件锁、按目录层级继承的项目信任门控，以及通过 tool_call 钩子拦截危险命令/写入的能力。",
+        "en": "Keep the lock-guarded, directory-hierarchy project-trust gating and the ability to intercept dangerous commands/writes via tool_call hooks."
+      },
+      "fix": {
+        "zh": "将 OS 级沙箱（文件系统/网络白名单）从示例提升为可一键启用的内置默认，减少对用户自行安装扩展的依赖。",
+        "en": "Promote the OS-level sandbox (filesystem/network allowlists) from an example to a built-in, one-flag default rather than relying on users installing an extension."
+      }
+    },
+    "multiagent": {
+      "score": 64,
+      "zh": "多代理通过示例扩展 subagent 实现，但实现完整：每个子代理以独立 pi 进程（--mode json -p --no-session）运行，拥有隔离上下文，支持单个、并行（上限 8、并发 4）与链式（{previous} 占位符）三种模式，按并发上限调度，流式回传工具调用、聚合 usage/cost，并将 Ctrl+C abort 传播到子进程；代理定义来自 markdown frontmatter（name/description/tools/model）。属于强能力但位于 examples/ 而非核心原语。",
+      "en": "Multi-agent is delivered via the example subagent extension, but the implementation is complete: each subagent runs as a separate pi process (--mode json -p --no-session) with isolated context, supporting single, parallel (max 8, concurrency 4), and chain (with a {previous} placeholder) modes, scheduled under a concurrency limit, streaming back tool calls, aggregating usage/cost, and propagating Ctrl+C abort to children; agents are defined via markdown frontmatter (name/description/tools/model). It is a strong capability but lives in examples/ rather than as a core primitive.",
+      "citations": [
+        "packages/coding-agent/examples/extensions/subagent/index.ts:L1-L13",
+        "packages/coding-agent/examples/extensions/subagent/index.ts:L33-L36",
+        "packages/coding-agent/examples/extensions/subagent/index.ts:L267-L429",
+        "packages/coding-agent/examples/extensions/subagent/index.ts:L460-L491",
+        "packages/coding-agent/examples/extensions/subagent/agents.ts:L26-L75"
+      ],
+      "keep": {
+        "zh": "保留以独立进程隔离上下文、支持并行/链式编排并聚合用量与传播 abort 的子代理设计。",
+        "en": "Keep the subagent design that isolates context via separate processes, supports parallel/chain orchestration, and aggregates usage while propagating abort."
+      },
+      "fix": {
+        "zh": "将子代理提升为受支持的核心特性，并增加共享工作区/结构化结果交接与跨代理调度可观测性，减少纯进程级隔离带来的协调开销。",
+        "en": "Promote subagents to a supported core feature and add shared-workspace/structured result handoff plus cross-agent scheduling observability to reduce the coordination overhead of pure process-level isolation."
+      }
+    }
+  },
+  "keyFiles": [
+    "packages/coding-agent/src/core/compaction/compaction.ts",
+    "packages/coding-agent/src/core/compaction/branch-summarization.ts",
+    "packages/coding-agent/src/core/skills.ts",
+    "packages/coding-agent/src/core/system-prompt.ts",
+    "packages/coding-agent/src/core/resource-loader.ts",
+    "packages/coding-agent/src/core/trust-manager.ts",
+    "packages/coding-agent/src/core/project-trust.ts",
+    "packages/coding-agent/src/core/agent-session.ts",
+    "packages/coding-agent/src/core/extensions/types.ts",
+    "packages/coding-agent/src/core/tools/bash.ts",
+    "packages/coding-agent/src/core/tools/truncate.ts",
+    "packages/agent/src/harness/agent-harness.ts",
+    "packages/agent/src/harness/session/jsonl-storage.ts",
+    "packages/coding-agent/src/core/session-manager.ts",
+    "packages/coding-agent/examples/extensions/subagent/index.ts",
+    "packages/coding-agent/examples/extensions/subagent/agents.ts",
+    "packages/coding-agent/examples/extensions/sandbox/index.ts",
+    "packages/ai/src/api/anthropic-messages.ts"
+  ]
+}

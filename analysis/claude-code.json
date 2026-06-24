@@ -1,0 +1,126 @@
+{
+  "id": "claude-code",
+  "name": "Claude Code",
+  "vendor": "Anthropic",
+  "lang": "TypeScript",
+  "evidenceBasis": "docs",
+  "repo": null,
+  "evidenceNote": {
+    "zh": "结论基于 Anthropic 官方文档与公开插件/钩子，非核心源码（Claude Code 核心以压缩 bundle 形式发布）。",
+    "en": "Conclusions are grounded in Anthropic's official documentation and public plugins/hooks, NOT core source (Claude Code ships as a minified bundle)."
+  },
+  "verdict": {
+    "zh": "基于官方文档判断，Claude Code 在记忆、技能扩展面与子代理三方面属第一梯队：CLAUDE.md 分层记忆叠加自动记忆（MEMORY.md），Agent Skills/MCP/斜杠命令构成业内最宽的扩展面，子代理（Task/Agent 工具）独立上下文窗口且可路由到更便宜的模型。沙箱（六种权限模式 + 操作系统级 Bash 隔离）同样成熟。上下文压缩（auto-compact）可靠但本质有损。成本是相对短板：虽有自动 prompt 缓存、压缩与廉价模型路由等成熟省钱手段，但旗舰 Opus 仍是高价档位，且新分词器对相同文本最多多用约 35% token。",
+    "en": "On a docs basis, Claude Code is top-tier on memory, extensibility surface, and sub-agents: CLAUDE.md layered memory plus auto memory (MEMORY.md); Agent Skills/MCP/slash commands form the industry's widest extension surface; sub-agents (the Task/Agent tool) get isolated context windows and can route to cheaper models. Sandboxing (six permission modes + OS-level Bash isolation) is equally mature. Auto-compact context compaction is reliable but inherently lossy. Cost is the relative weak point: despite mature savings levers (automatic prompt caching, compaction, cheap-model routing), flagship Opus remains the premium tier and its new tokenizer can use up to ~35% more tokens for the same text."
+  },
+  "cells": {
+    "memory": {
+      "score": 90,
+      "zh": "文档描述了两套互补的持久化机制：(1) CLAUDE.md 分层记忆，按加载顺序覆盖『受管策略 → 用户(~/.claude/CLAUDE.md) → 项目(./CLAUDE.md 或 .claude/CLAUDE.md) → 本地(CLAUDE.local.md)』四级作用域，支持 @path 导入（最多 4 跳）、.claude/rules/ 按路径/文件类型作用域、子目录按需加载，并用 /init 自动生成；(2) 自动记忆——Claude 依据你的纠正与偏好自行写入 MEMORY.md，每次会话开头加载其前 200 行或 25KB（以先到者为准）。分层、可共享、可版本化，是公认强项。",
+      "en": "The docs describe two complementary persistence systems: (1) CLAUDE.md layered memory with four scopes loaded in order — managed policy → user (~/.claude/CLAUDE.md) → project (./CLAUDE.md or .claude/CLAUDE.md) → local (CLAUDE.local.md) — plus @path imports (max 4 hops), path/file-type-scoped .claude/rules/, on-demand subdirectory loading, and /init to bootstrap; (2) auto memory, where Claude writes MEMORY.md itself from your corrections and preferences, with its first 200 lines or 25KB (whichever comes first) loaded at the start of each session. Layered, shareable, and version-controllable — a recognized strength.",
+      "citations": [
+        "https://code.claude.com/docs/en/memory",
+        "https://code.claude.com/docs/en/context-window"
+      ],
+      "keep": {
+        "zh": "保持 CLAUDE.md 四级作用域 + @import + .claude/rules/ 路径作用域，并叠加自我书写的自动记忆（MEMORY.md），形成既可团队共享又能跨会话自学习的双层记忆。",
+        "en": "Keep the four-scope CLAUDE.md hierarchy + @import + path-scoped .claude/rules/, layered with self-authored auto memory (MEMORY.md) — a dual system that is both team-shareable and self-learning across sessions."
+      },
+      "fix": {
+        "zh": "文档明确 CLAUDE.md 与自动记忆都是『上下文而非强制配置』，且建议单文件 < 200 行——记忆遵循度依赖模型自觉，强约束仍需改用 PreToolUse 钩子；自动记忆的 200 行/25KB 加载上限也意味着长期知识会被截断。",
+        "en": "The docs state CLAUDE.md and auto memory are 'context, not enforced configuration' and advise < 200 lines per file — adherence relies on the model's discretion, so hard guarantees still require a PreToolUse hook, and the 200-line/25KB auto-memory load cap means long-horizon knowledge can be truncated."
+      }
+    },
+    "context": {
+      "score": 83,
+      "zh": "文档说明 Claude Code 随接近上限自动管理上下文：先清理较早的工具输出，必要时再对会话进行摘要（auto-compaction），保留你的请求与关键代码片段，丢弃早期的详细指令/工具结果。可用 /compact 加自定义指令（如『聚焦代码样例与 API 用法』）或在 CLAUDE.md 写入压缩偏好来引导保留内容；/context 查看占用、/clear 在任务间清空、子代理把探索/日志隔离到独立窗口。上下文窗口可视化页逐步演示了启动占用与压缩。机制成熟但摘要本质有损。",
+      "en": "The docs describe automatic context management as the window fills: Claude clears older tool outputs first, then summarizes the conversation if needed (auto-compaction), preserving your requests and key code snippets while discarding early detailed instructions/tool results. You can steer it with /compact plus custom instructions (e.g. 'Focus on code samples and API usage') or compaction preferences in CLAUDE.md; /context inspects usage, /clear resets between tasks, and sub-agents isolate exploration/logs into separate windows. The context-window visualization page walks through startup usage and compaction. Mature, but summarization is inherently lossy.",
+      "citations": [
+        "https://code.claude.com/docs/en/how-claude-code-works",
+        "https://code.claude.com/docs/en/context-window",
+        "https://code.claude.com/docs/en/costs"
+      ],
+      "keep": {
+        "zh": "保持『先清工具输出、再摘要会话』的分级压缩策略，以及可用 /compact 与 CLAUDE.md 指令自定义保留重点的能力——既延长会话又把控制权交还用户。",
+        "en": "Keep the tiered strategy of 'clear tool outputs first, then summarize the conversation,' plus user-steerable retention via /compact and CLAUDE.md instructions — extending sessions while handing control back to the user."
+      },
+      "fix": {
+        "zh": "压缩是有损摘要：早期详细指令会被丢弃，长任务中细节流失不可避免；文档建议主动用 /clear、/context 与子代理来弥补，说明单靠 auto-compact 难以无损保真，缺少结构化的可检索外部记忆作为兜底。",
+        "en": "Compaction is lossy summarization: early detailed instructions get discarded and detail loss over long tasks is unavoidable; the docs recommend compensating with proactive /clear, /context, and sub-agents, signaling that auto-compact alone can't guarantee fidelity and that a structured, retrievable external store as a fallback is absent."
+      }
+    },
+    "skill": {
+      "score": 95,
+      "zh": "扩展面是 Claude Code 的最强项，也是同类中最宽的。文档涵盖：(1) Agent Skills——以 SKILL.md 为核心的开放标准，正文按需加载（渐进披露），引用材料未用前几乎不耗 token，且自定义命令已并入技能（.claude/commands/x.md 与 .claude/skills/x/SKILL.md 都生成 /x）；(2) MCP——通过模型上下文协议接入数百个外部工具/数据源，工具定义默认延迟加载（仅工具名先进上下文）；(3) 斜杠命令——内置命令、捆绑技能与自定义 /command 的完整体系。再加上钩子、子代理与插件，构成可组合、可共享、跨工具通用的扩展生态。",
+      "en": "Extensibility is Claude Code's strongest area and the widest in its class. The docs cover: (1) Agent Skills — an open standard centered on SKILL.md with on-demand body loading (progressive disclosure) so reference material costs almost nothing until used, and custom commands merged into skills (.claude/commands/x.md and .claude/skills/x/SKILL.md both create /x); (2) MCP — hundreds of external tools/data sources via the Model Context Protocol, with tool definitions deferred by default so only tool names enter context first; (3) slash commands — a full system of built-ins, bundled skills, and custom /command. Add hooks, sub-agents, and plugins, and you get a composable, shareable, cross-tool extension ecosystem.",
+      "citations": [
+        "https://code.claude.com/docs/en/skills",
+        "https://code.claude.com/docs/en/mcp",
+        "https://code.claude.com/docs/en/commands"
+      ],
+      "keep": {
+        "zh": "保持 SKILL.md 渐进披露 + 命令并入技能 + MCP 工具定义延迟加载的设计——既给最广扩展面，又把 token 成本压到『用到才付费』。",
+        "en": "Keep SKILL.md progressive disclosure + commands-merged-into-skills + deferred MCP tool definitions — delivering the widest surface while keeping token cost on a 'pay only when used' basis."
+      },
+      "fix": {
+        "zh": "面之广带来配置与治理复杂度：技能、命令、MCP 服务器、钩子、子代理、插件多套机制并存，文档需专门指引『何时用哪一个』；MCP 服务器还引入第三方供应链与权限审批面，需配合权限/沙箱治理。",
+        "en": "Breadth brings configuration and governance complexity: skills, commands, MCP servers, hooks, sub-agents, and plugins coexist, and the docs need dedicated guidance on 'when to use which'; MCP servers also add a third-party supply-chain and approval surface that must be governed via permissions/sandboxing."
+      }
+    },
+    "cost": {
+      "score": 62,
+      "zh": "成本工具本身相当成熟：文档说明 Claude Code 自动用 prompt 缓存（命中读取约为标准输入价的 0.1x，写入为 1.25x/5 分钟或 2x/1 小时）降低重复系统提示开销，并用 auto-compaction 缩减历史；还提供 /usage、/cost 追踪、团队支出上限、按子代理路由到更便宜的 Haiku、以及 MCP 工具定义延迟加载。但本维度是相对短板：旗舰 Opus 仍是高价档（Opus 4.x 约 $5/MTok 输入、$25/MTok 输出，对比 Sonnet $3/$15、Haiku $1/$5），且 Opus 4.7+ 新分词器对相同文本最多多用约 35% token，抵消部分省钱红利。企业部署文档给出人均约 $13/活跃日、$150–250/月的参考。",
+      "en": "The cost tooling itself is mature: the docs note Claude Code automatically uses prompt caching (cache reads ~0.1x base input; writes 1.25x on the 5-min cache or 2x on the 1-hour cache) to cut repeated system-prompt cost, plus auto-compaction to shrink history; it also offers /usage and /cost tracking, team spend limits, per-sub-agent routing to cheaper Haiku, and deferred MCP tool definitions. But this dimension is the relative weak point: flagship Opus stays in the premium tier (Opus 4.x ~$5/MTok input, $25/MTok output, vs Sonnet $3/$15 and Haiku $1/$5), and the new Opus 4.7+ tokenizer can use up to ~35% more tokens for the same text, eroding some savings. Enterprise docs cite ~$13 per developer per active day and $150–250/month as references.",
+      "citations": [
+        "https://code.claude.com/docs/en/costs",
+        "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+        "https://platform.claude.com/docs/en/about-claude/pricing"
+      ],
+      "keep": {
+        "zh": "保持开箱即用的自动 prompt 缓存 + auto-compaction + 廉价模型路由（子代理 Haiku）+ /usage/团队支出上限这套省钱组合，让重复内容近乎免费、历史可压缩、简单任务走便宜模型。",
+        "en": "Keep the out-of-the-box savings stack — automatic prompt caching + auto-compaction + cheap-model routing (Haiku sub-agents) + /usage and team spend limits — making repeated content nearly free, history compressible, and simple tasks served by cheaper models."
+      },
+      "fix": {
+        "zh": "旗舰 Opus 单价仍显著高于 Sonnet/Haiku，叠加新分词器最多 +35% token，使复杂任务默认走 Opus 时成本承压；文档主要靠『改用 Sonnet/Haiku、勤 /clear、缩小上下文』来对冲，治理在很大程度上落到用户的模型选择与上下文卫生上。",
+        "en": "Flagship Opus pricing remains well above Sonnet/Haiku, and the new tokenizer's up-to-+35% token overhead pressures cost when complex tasks default to Opus; the docs mostly hedge via 'switch to Sonnet/Haiku, /clear often, shrink context,' pushing governance largely onto the user's model choice and context hygiene."
+      }
+    },
+    "sandbox": {
+      "score": 88,
+      "zh": "安全模型成熟且分层。文档描述分级权限系统（只读免批；Bash 执行、文件修改需批准）与六种权限模式：default、acceptEdits、plan、auto、dontAsk、bypassPermissions；可叠加 allow/deny/ask 规则，且 deny 先于 allow 评估、跨作用域生效，并有受保护路径在除 bypass 外的所有模式下永不自动批准。Bash 沙箱提供操作系统级隔离（macOS Seatbelt / Linux bubblewrap），按路径与网络域限定可触达范围并对子进程强制执行；可经受管设置在组织级强制。/permissions 提供可视化管理。",
+      "en": "The security model is mature and layered. The docs describe a tiered permission system (reads need no approval; Bash execution and file modification do) and six permission modes: default, acceptEdits, plan, auto, dontAsk, bypassPermissions. Layer allow/deny/ask rules on top, with deny evaluated before allow and applying across scopes, plus protected paths that are never auto-approved in any mode except bypass. The Bash sandbox gives OS-level isolation (macOS Seatbelt / Linux bubblewrap), bounding which paths and network domains commands can reach and enforcing it on child processes; it can be mandated org-wide via managed settings. /permissions provides a visual manager.",
+      "citations": [
+        "https://code.claude.com/docs/en/permissions",
+        "https://code.claude.com/docs/en/permission-modes",
+        "https://code.claude.com/docs/en/sandboxing"
+      ],
+      "keep": {
+        "zh": "保持『权限模式 + allow/deny/ask 规则（deny 优先）+ 受保护路径 + 操作系统级 Bash 沙箱 + 受管设置组织级强制』的纵深防御，让自主执行在可审计的边界内进行。",
+        "en": "Keep the defense-in-depth of 'permission modes + allow/deny/ask rules (deny wins) + protected paths + OS-level Bash sandbox + org-wide managed settings,' letting autonomous execution run inside auditable boundaries."
+      },
+      "fix": {
+        "zh": "bypassPermissions 会跳过几乎所有检查（文档限定仅用于隔离容器/VM），auto 模式以后台安全检查换取近乎无提示，存在配置错误即放权的风险；沙箱依赖宿主 OS 原语（Seatbelt/bubblewrap），跨平台一致性与对无法沙箱化命令的回退仍需用户理解其边界。",
+        "en": "bypassPermissions skips nearly all checks (the docs restrict it to isolated containers/VMs) and auto mode trades near-promptless execution for background safety checks, so misconfiguration can over-grant; the sandbox relies on host OS primitives (Seatbelt/bubblewrap), so cross-platform consistency and the fallback for non-sandboxable commands still require the user to understand the boundaries."
+      }
+    },
+    "multiagent": {
+      "score": 88,
+      "zh": "子代理故事成熟。文档说明每个子代理运行于独立上下文窗口，拥有自定义系统提示、特定工具访问与独立权限；Claude 依据子代理 description 自动委派（Task 工具在 v2.1.63 后更名为 Agent）。内置 Explore（Haiku、只读）、Plan（继承模型、只读）、general-purpose（全工具）等，自定义子代理可按需选模型——简单任务可路由到 Haiku 控成本。子代理把探索/日志隔离在自身窗口、仅回传摘要，从而节省主上下文。更进一步还有后台代理（并行独立会话）与实验性 agent teams（队员间直接消息、共享任务）。Agent SDK 亦支持。",
+      "en": "The sub-agent story is mature. The docs state each sub-agent runs in its own context window with a custom system prompt, specific tool access, and independent permissions; Claude auto-delegates based on a sub-agent's description (the Task tool was renamed Agent in v2.1.63). Built-ins include Explore (Haiku, read-only), Plan (inherits model, read-only), and general-purpose (all tools), and custom sub-agents can pick a model — routing simple tasks to Haiku to control cost. Sub-agents isolate exploration/logs in their own window and return only a summary, saving the main context. Beyond that there are background agents (parallel independent sessions) and experimental agent teams (direct inter-agent messaging, shared tasks). The Agent SDK supports them too.",
+      "citations": [
+        "https://code.claude.com/docs/en/sub-agents",
+        "https://code.claude.com/docs/en/agent-sdk/subagents",
+        "https://code.claude.com/docs/en/agent-teams"
+      ],
+      "keep": {
+        "zh": "保持子代理独立上下文窗口 + 工具/权限隔离 + 按子代理选模型 + 仅回传摘要的设计，并以内置 Explore/Plan/general-purpose 开箱即用，形成省上下文又可控成本的委派模型。",
+        "en": "Keep sub-agents' isolated context windows + tool/permission isolation + per-agent model selection + summary-only return, with built-in Explore/Plan/general-purpose out of the box — a delegation model that saves context and controls cost."
+      },
+      "fix": {
+        "zh": "标准子代理仅能向主代理回传、不能横向通信，真正的队员互通要靠 agent teams，而后者文档明确标注为实验性、默认关闭，且在会话恢复、任务协调与关闭行为上有已知限制——多代理协作的高级形态尚未达到一等公民的稳定度。",
+        "en": "Standard sub-agents only report back to the main agent and can't talk laterally; true peer-to-peer coordination requires agent teams, which the docs explicitly flag as experimental, disabled by default, and carrying known limitations around session resumption, task coordination, and shutdown — so the advanced form of multi-agent collaboration isn't yet a stable first-class citizen."
+      }
+    }
+  },
+  "keyFiles": []
+}
