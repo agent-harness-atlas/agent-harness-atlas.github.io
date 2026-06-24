@@ -8,11 +8,11 @@
       "behavior": "访问站点能看到由单一数据源驱动的能力矩阵页与 agent 详情页两个页面（Vite 多页静态站）。",
       "verification": "Vite 多页应用：index.html(矩阵) + agent.html(详情) 均能构建并加载。两页的 agent/维度/评分数据来自构建期合成的单一数据源（由 analysis/*.json + 站点元数据合成），不存在模版那种把数据数组内联复制两份的情况。`make build` 成功产出 dist/index.html 与 dist/agent.html；single-source 检查确认两页引用同一份合成数据模块、且仓库中不存在重复的 AGENTS 数据字面量定义（grep 只允许一处权威定义）。",
       "auto_verify": "npm run build && node scripts/checks/single-source.mjs",
-      "state": "active",
-      "evidence": "",
+      "state": "passing",
+      "evidence": "commit 9003232",
       "blocked_reason": "",
       "created_at": "2026-06-24T12:30:00Z",
-      "updated_at": "2026-06-24T13:10:00Z"
+      "updated_at": "2026-06-24T13:25:00Z"
     },
     {
       "id": "F02",
