@@ -182,8 +182,8 @@
     .dim-evidence { font-family: var(--serif); font-size: 14.5px; line-height: 1.62; color: color-mix(in srgb, var(--ink) 86%, var(--muted)); margin: 12px 0 18px; }
     .dim-evidence code { font-family: var(--mono); font-size: 0.86em; background: var(--raised); padding: 1px 6px; border-radius: 3px; }
     .dim-tags { display: flex; flex-direction: column; gap: 12px; }
-    .tag-row { display: grid; grid-template-columns: 58px 1fr; gap: 12px; font-size: 13.5px; line-height: 1.55; align-items: start; }
-    .tag-body { font-family: var(--serif); color: color-mix(in srgb, var(--ink) 82%, var(--muted)); }
+    .tag-row { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; font-size: 13.5px; line-height: 1.55; align-items: start; }
+    .tag-body { min-width: 0; overflow-wrap: anywhere; font-family: var(--serif); color: color-mix(in srgb, var(--ink) 82%, var(--muted)); }
     .tag-body code { font-family: var(--mono); font-size: 0.84em; background: var(--raised); padding: 1px 5px; border-radius: 3px; }
     .tag-lead { display: block; margin-bottom: 5px; }
     .tag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }

@@ -38,17 +38,40 @@ test("the two grid columns are exactly equal (50/50 split)", async ({ page }) =>
   expect(Math.abs(nums[0] - nums[1])).toBeLessThanOrEqual(1);
 });
 
-test("long citation paths do not overflow their card", async ({ page }) => {
-  await page.goto("/agent.html#pi");
-  const overflow = await page.evaluate(() => {
-    let n = 0;
-    for (const card of document.querySelectorAll(".dim")) {
-      const cr = card.getBoundingClientRect();
-      for (const ci of card.querySelectorAll(".cite")) {
-        if (ci.getBoundingClientRect().right > cr.right + 1) n++;
-      }
-    }
-    return n;
-  });
-  expect(overflow, "no citation should spill past its card's right edge").toBe(0);
-});
+// No text element (prose, bullets, evidence, citations) may spill past its
+// card's content box, at any common viewport width. This is the durable guard
+// for Bojun's "技能扩展" overflow screenshot — the bug was a tag-row 1fr column
+// with the default min-width:auto letting long tokens (registerTool/Command/…
+// /MessageRenderer) blow past the card edge. Fixed via minmax(0,1fr) + the
+// .tag-body min-width:0 / overflow-wrap:anywhere pairing.
+const OVERFLOW_AGENTS = ["pi", "claude-code", "opencode", "cline"];
+const OVERFLOW_VIEWPORTS = [1280, 1440, 1728];
+
+for (const w of OVERFLOW_VIEWPORTS) {
+  for (const id of OVERFLOW_AGENTS) {
+    test(`no text overflows its card — #${id} @${w}`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: 1000 });
+      await page.goto(`/agent.html#${id}`);
+      await page.locator(".dim").first().waitFor();
+      const worst = await page.evaluate(() => {
+        let maxOver = 0;
+        let detail = "";
+        const sel = ".tag-body, .tag-list li, .tag-lead, .dim-evidence, .cite, .dim-name";
+        for (const card of document.querySelectorAll(".dim")) {
+          const cr = card.getBoundingClientRect();
+          const padR = parseFloat(getComputedStyle(card).paddingRight);
+          const contentRight = cr.right - padR;
+          for (const el of card.querySelectorAll(sel)) {
+            const over = Math.round(el.getBoundingClientRect().right - contentRight);
+            if (over > maxOver) {
+              maxOver = over;
+              detail = (el.textContent || "").slice(0, 40);
+            }
+          }
+        }
+        return { maxOver, detail };
+      });
+      expect(worst.maxOver, `overflow on ${id} @${w}: "${worst.detail}"`).toBeLessThanOrEqual(1);
+    });
+  }
+}
