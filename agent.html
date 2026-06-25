@@ -167,9 +167,11 @@
     .section-title .en { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); font-weight: 400; margin-left: 10px; }
 
     /* ===== Dimension cards ===== */
-    .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    /* minmax(0, 1fr) (not bare 1fr) so long unbreakable content — file-path
+       citations — can't blow a column past its 50% share and desync card widths. */
+    .dim-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
     @media (max-width: 860px) { .dim-grid { grid-template-columns: 1fr; } }
-    .dim { background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow); }
+    .dim { min-width: 0; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 22px 24px; box-shadow: var(--shadow); }
     .dim-head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 4px; }
     .dim-name { font-family: var(--serif); font-weight: 600; font-size: 19px; }
     .dim-name .en { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); font-weight: 400; margin-top: 2px; }
