@@ -139,6 +139,9 @@
     .tip { position: absolute; z-index: 30; left: 50%; bottom: calc(100% - 4px); transform: translateX(-50%) translateY(4px); width: 250px; background: var(--ink); color: var(--bg); padding: 11px 13px; border-radius: var(--r); font-family: var(--serif); font-size: 13px; line-height: 1.5; text-align: left; opacity: 0; pointer-events: none; transition: opacity .14s ease, transform .14s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
     .tip .ev { display: block; margin-top: 7px; font: 500 10px/1.4 var(--mono); letter-spacing: 0.04em; opacity: 0.72; }
     td.cell:hover .tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* top row flips downward so the tip never covers the sticky header */
+    .tip.tip-below { bottom: auto; top: calc(100% - 4px); transform: translateX(-50%) translateY(-4px); }
+    td.cell:hover .tip.tip-below { transform: translateX(-50%) translateY(0); }
 
     /* overall score column */
     .score-cell { text-align: right; padding: 13px 18px 13px 10px; white-space: nowrap; }

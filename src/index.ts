@@ -71,9 +71,12 @@ function renderBody(): void {
         `<span class="track"><i style="--w:${isNum ? c.score : 0}%"></i></span>` +
         "</span>";
       const ev = c.fix && t(c.fix, state.lang) && t(c.fix, state.lang) !== "—" ? t(c.fix, state.lang) : "";
+      // The tip pops upward by default; for the top row that would cover the
+      // sticky header, so flip it to open downward instead (tip-below).
+      const tipCls = i === 0 ? "tip tip-below" : "tip";
       cells +=
         `<td class="cell" data-testid="cell-${a.id}-${d.id}" data-score="${isNum ? c.score : ""}">${box}` +
-        `<span class="tip">${esc(t(c, state.lang))}` +
+        `<span class="${tipCls}">${esc(t(c, state.lang))}` +
         (ev ? `<span class="ev">${t(UI.evidence, state.lang)}: ${esc(ev)}</span>` : "") +
         "</span></td>";
     }

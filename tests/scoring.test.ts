@@ -78,19 +78,19 @@ describe("bandOf — score maps to the correct semantic band", () => {
     expect(bandOf(100).cvar).toBe("exceptional");
   });
 
-  it("65–84 is Strong", () => {
-    expect(bandOf(65).cvar).toBe("strong");
+  it("70–84 is Strong", () => {
+    expect(bandOf(70).cvar).toBe("strong");
     expect(bandOf(84).cvar).toBe("strong");
   });
 
-  it("40–64 is Functional", () => {
-    expect(bandOf(40).cvar).toBe("functional");
-    expect(bandOf(64).cvar).toBe("functional");
+  it("60–69 is Functional", () => {
+    expect(bandOf(60).cvar).toBe("functional");
+    expect(bandOf(69).cvar).toBe("functional");
   });
 
-  it("1–39 is Broken", () => {
+  it("1–59 is Broken", () => {
     expect(bandOf(1).cvar).toBe("broken");
-    expect(bandOf(39).cvar).toBe("broken");
+    expect(bandOf(59).cvar).toBe("broken");
   });
 
   it("0 falls through every band.min and lands on Pending", () => {
@@ -107,9 +107,12 @@ describe("bandOf — score maps to the correct semantic band", () => {
     // 84 must be Strong, 85 must tip into Exceptional.
     expect(bandOf(84).cvar).toBe("strong");
     expect(bandOf(85).cvar).toBe("exceptional");
-    // 64 Functional, 65 Strong.
-    expect(bandOf(64).cvar).toBe("functional");
-    expect(bandOf(65).cvar).toBe("strong");
+    // 69 Functional, 70 Strong.
+    expect(bandOf(69).cvar).toBe("functional");
+    expect(bandOf(70).cvar).toBe("strong");
+    // 59 Broken, 60 Functional.
+    expect(bandOf(59).cvar).toBe("broken");
+    expect(bandOf(60).cvar).toBe("functional");
   });
 
   it("BANDS are sorted by descending threshold (invariant bandOf relies on)", () => {
@@ -118,5 +121,29 @@ describe("bandOf — score maps to the correct semantic band", () => {
     for (let i = 1; i < BANDS.length; i++) {
       expect(BANDS[i - 1].min).toBeGreaterThan(BANDS[i].min);
     }
+  });
+});
+
+// Lock in Bojun's grading scale (2026-06): 85 卓越 / 70 扎实 / 60 可用 / <60 薄弱.
+// If anyone shifts BANDS thresholds again, these fail loudly with the intent.
+describe("grading scale matches the agreed standard (85/70/60)", () => {
+  it("threshold mins are exactly 85, 70, 60, 1", () => {
+    const mins = BANDS.map((b) => b.min);
+    expect(mins).toEqual([85, 70, 60, 1]);
+  });
+
+  it("each band carries its agreed Chinese label", () => {
+    const byVar = Object.fromEntries(BANDS.map((b) => [b.cvar, b.zh]));
+    expect(byVar.exceptional).toBe("卓越");
+    expect(byVar.strong).toBe("扎实");
+    expect(byVar.functional).toBe("可用");
+    expect(byVar.broken).toBe("薄弱");
+  });
+
+  it("representative scores land in the right band", () => {
+    expect(bandOf(90).zh).toBe("卓越"); // 85+
+    expect(bandOf(75).zh).toBe("扎实"); // 70–84
+    expect(bandOf(63).zh).toBe("可用"); // 60–69
+    expect(bandOf(45).zh).toBe("薄弱"); // 1–59
   });
 });
