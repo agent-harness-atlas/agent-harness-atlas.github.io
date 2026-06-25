@@ -244,6 +244,10 @@ export const UI: Record<string, Bilingual> = {
     "zh": "不足",
     "en": "gap"
   },
+  "testedVer": {
+    "zh": "评测版本",
+    "en": "Tested version"
+  },
   "dimReports": {
     "zh": "逐维度报告",
     "en": "Dimension reports"

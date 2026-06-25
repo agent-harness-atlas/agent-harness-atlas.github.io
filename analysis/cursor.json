@@ -1,7 +1,7 @@
 {
   "id": "cursor",
   "name": "Cursor Agent",
-  "vendor": "Anysphere",
+  "vendor": "闭源",
   "lang": "—",
   "evidenceBasis": "docs",
   "repo": null,
@@ -10,13 +10,13 @@
     "en": "Conclusions are grounded in Cursor's official documentation, NOT source (Cursor is a closed-source IDE)."
   },
   "verdict": {
-    "zh": "Cursor Agent 是一款 IDE 原生的闭源编码代理，其最大亮点是上下文检索：向量化代码库索引、语义与代理式搜索（含自研 Instant Grep 与 Explore 子代理）以及 @ 引用，使其在大型代码库中的上下文获取能力处于第一梯队。记忆层由 Rules（Project/User/Team/AGENTS.md）与 Memories（按项目记住对话事实）组成，可用但显式长期记忆较浅。技能扩展依托 MCP、Agent Skills 与 Subagents，较强但以 IDE 为中心。成本为订阅 + 两个用量池（Auto+Composer 与 API）的混合模式，有可见用量表但重度使用下不完全可预测。沙箱是相对弱项：核心代理在本地 IDE 进程内执行，仅对部分 shell 命令“尽可能”沙箱化，依赖 Run Modes 与 permissions.json 白名单（云端 Cloud Agent 才有隔离 VM）。多代理真实存在：Cloud/Background Agents 在隔离 VM 中并行运行，配合 Subagents 并行子任务。",
+    "zh": "Cursor Agent 是 IDE 原生的闭源编码代理，最大亮点是大型代码库的上下文检索（向量索引加语义/代理式搜索）。记忆和技能扩展可用但以 IDE 为中心，成本是订阅加用量池的混合模式。沙箱是相对弱项——本地代理在 IDE 进程内跑，强隔离只在云端 Cloud Agent。",
     "en": "Cursor Agent is an IDE-native, closed-source coding agent whose standout is context retrieval: vector codebase indexing, semantic + agentic search (with a custom Instant Grep engine and an Explore subagent), and @-mention references put its large-codebase context acquisition in the top tier. Its memory layer combines Rules (Project/User/Team/AGENTS.md) with Memories (per-project recall of conversational facts) — usable but the explicit long-term layer is shallow. Skill extensibility rests on MCP, Agent Skills, and Subagents — strong but IDE-centric. Cost is a hybrid of subscription + two usage pools (Auto+Composer and API), with visible meters but not fully predictable under heavy use. Sandbox is a relative weakness: the core agent executes inside the local IDE process, sandboxing only some shell commands 'when possible' and relying on Run Modes and permissions.json allowlists (only cloud Cloud Agents get isolated VMs). Multi-agent is real: Cloud/Background Agents run in parallel in isolated VMs, complemented by parallel Subagents."
   },
   "cells": {
     "memory": {
       "score": 58,
-      "zh": "记忆分三层：Rules（存于 .cursor/rules，分 Project/User/Team，及 AGENTS.md）提供持久的提示级指令；Memories 按项目记住对话中的事实并在后续引用，可在 Settings 中管理；代码库索引充当隐式记忆。文档坦言“大模型在补全之间不保留记忆”，Rules 仅在提示层提供持久上下文，Memories 仍属较轻量的特性，缺少深度、结构化的显式长期记忆存储与召回 API。整体可用但显式长期记忆层偏浅。",
+      "zh": "记忆分三层，能用，但显式长期记忆偏浅。",
       "en": "Memory is layered: Rules (stored in .cursor/rules, split into Project/User/Team, plus AGENTS.md) give persistent prompt-level instructions; Memories remembers facts from conversations per project and references them later, manageable from Settings; the codebase index acts as implicit memory. The docs candidly note 'LLMs don't retain memory between completions,' Rules only inject persistent context at the prompt level, and Memories remains a lightweight feature lacking a deep, structured explicit long-term store with a recall API. Usable overall, but the explicit long-term layer is shallow.",
       "citations": [
         "https://cursor.com/docs/rules",
@@ -24,17 +24,17 @@
         "https://cursor.com/help/customization/indexing"
       ],
       "keep": {
-        "zh": "Rules 四种类型 + 按项目 Memories + 自动代码库索引，三者叠加覆盖了团队规范、个人偏好与会话事实的持久化。",
+        "zh": "三层叠加覆盖了团队规范、个人偏好和会话事实：\n- Rules（.cursor/rules，分 Project/User/Team，含 AGENTS.md）提供持久的提示级指令\n- Memories 按项目记住对话事实、之后引用\n- 代码库索引当隐式记忆",
         "en": "Four Rule types + per-project Memories + automatic codebase indexing together cover persistence of team conventions, personal preferences, and conversational facts."
       },
       "fix": {
-        "zh": "缺乏深度、可查询的显式长期记忆存储（结构化召回、跨项目共享、可审计编辑），Memories 仍偏“首览级”特性。",
+        "zh": "文档自己也承认『大模型在两次补全间不保留记忆』：缺一个有深度、可查询的显式长期记忆（结构化召回、跨项目共享、可审计编辑），Memories 仍偏『首览级』特性。",
         "en": "Lacks a deep, queryable explicit long-term memory store (structured recall, cross-project sharing, auditable edits); Memories remains a 'first-look'-tier feature."
       }
     },
     "context": {
       "score": 88,
-      "zh": "公认强项。Cursor 在打开项目时自动对代码库做向量化索引（约每 5 分钟同步增量），驱动语义检索；Agent 组合多种搜索策略：自研 Instant Grep（在大型代码库上优于 ripgrep）做精确匹配、语义搜索做模糊意图、Explore 子代理做深挖。配合 @ 引用文件/符号/文档，以及 .cursorignore/.cursorindexingignore 精细控制可见范围。文档还描述了团队索引复用以将大型仓库首查时间从数小时降到数秒。大型代码库上下文获取处于第一梯队。",
+      "zh": "公认强项，在大代码库上属于第一梯队。",
       "en": "A recognized strength. On opening a project, Cursor automatically builds a vector index of the codebase (syncing roughly every 5 minutes) to power semantic search; the Agent combines multiple strategies: a custom Instant Grep (outperforming ripgrep on large codebases) for exact matches, semantic search for fuzzy intent, and an Explore subagent for deep dives. Add @-mention references for files/symbols/docs and .cursorignore/.cursorindexingignore for fine-grained scoping. Docs also describe teammate index reuse cutting time-to-first-query on huge repos from hours to seconds. Top-tier large-codebase context acquisition.",
       "citations": [
         "https://cursor.com/docs/agent/tools/search",
@@ -42,17 +42,17 @@
         "https://cursor.com/docs/reference/ignore-file"
       ],
       "keep": {
-        "zh": "向量索引 + 自研 Instant Grep + 语义搜索 + Explore 子代理 + @ 引用，多策略融合，对大型仓库尤其强。",
+        "zh": "多策略融合，对大型仓库尤其强：\n- 打开项目自动做向量索引（约每 5 分钟同步增量）\n- 自研 Instant Grep 精确匹配（大仓比 ripgrep 还快）+ 语义搜索抓模糊意图 + Explore 子代理深挖\n- @ 引用文件/符号/文档，团队还能复用索引把首查从数小时压到数秒",
         "en": "Vector index + custom Instant Grep + semantic search + Explore subagent + @-mentions — a multi-strategy blend that is especially strong on large repos."
       },
       "fix": {
-        "zh": "索引以本地/云索引为中心，检索质量依赖索引新鲜度（约 5 分钟同步），对超大单仓与极快变动场景仍可能有滞后。",
+        "zh": "检索质量依赖索引新鲜度（约 5 分钟同步），对超大单仓和极快变动的场景仍可能有滞后。",
         "en": "Indexing is local/cloud-index-centric and retrieval quality depends on index freshness (~5-min sync), which can lag on very large monorepos or rapidly changing trees."
       }
     },
     "skill": {
       "score": 72,
-      "zh": "扩展以 IDE 为中心但相当完整：完整支持 MCP（stdio 或 HTTP，任意语言编写服务器，mcp.json 配置，Marketplace 一键安装）连接外部工具与数据；Agent Skills 作为开放标准，把领域知识、脚本与模板打包为可移植、可版本化、可执行的技能包；Subagents 可配置自定义提示、工具访问与模型做专项委派；Rules 进一步约束行为。生态较强，但扩展面主要围绕 IDE/CLI 代理而非通用平台。",
+      "zh": "扩展以 IDE 为中心但相当完整，跨宿主可移植性偏弱。",
       "en": "Extensibility is IDE-centric but fairly complete: full MCP support (stdio or HTTP, servers in any language, mcp.json config, one-click Marketplace install) to connect external tools and data; Agent Skills as an open standard packaging domain knowledge, scripts, and templates into portable, version-controlled, actionable skills; Subagents configurable with custom prompts, tool access, and models for specialized delegation; Rules to further shape behavior. A strong ecosystem, though the extension surface centers on the IDE/CLI agent rather than a general platform.",
       "citations": [
         "https://cursor.com/docs/mcp",
@@ -60,23 +60,23 @@
         "https://cursor.com/docs/subagents"
       ],
       "keep": {
-        "zh": "MCP 一键安装 + Marketplace + 开放标准 Agent Skills + 可配置 Subagents，扩展手段多样且与代理深度集成。",
+        "zh": "扩展手段多样且与代理深度集成：\n- 完整 MCP（stdio/HTTP，任意语言写服务器，mcp.json 配置，Marketplace 一键装）\n- Agent Skills 开放标准，把知识/脚本/模板打成可移植技能包\n- Subagents 可配提示/工具/模型，Rules 再约束行为",
         "en": "One-click MCP install + Marketplace + the open Agent Skills standard + configurable Subagents give diverse, deeply integrated extension mechanisms."
       },
       "fix": {
-        "zh": "能力扩展绑定在 Cursor 的 IDE/CLI 代理上，跨宿主可移植性弱于纯 CLI/库式工具框架。",
+        "zh": "能力扩展绑在 Cursor 的 IDE/CLI 代理上，跨宿主可移植性弱于纯 CLI 或库式工具框架。",
         "en": "Capability extension is bound to Cursor's IDE/CLI agent, so cross-host portability is weaker than pure CLI/library-style tool frameworks."
       }
     },
     "cost": {
       "score": 55,
-      "zh": "成本被抽象为订阅 + 用量池的混合模型。平台层按席位：Hobby 免费，Pro/Pro Plus/Ultra 为个人付费档，Teams 按人计费。AI 用量层分两个池并随月度账期重置：Auto+Composer 池（选用 Auto 或 Composer 时含更多额度，面向日常代理式编码、成本更低）与 API 池（按模型 API 价计费，个人档每月至少含 \\$20，可按需加购）。两个池均有可见用量表。模型覆盖 OpenAI/Anthropic/Google 等全部前沿模型。透明度尚可，但重度使用下 API 池消耗不完全可预测。",
+      "zh": "成本是『订阅 + 用量池』混合，重度使用下不太好预测。",
       "en": "Cost is abstracted into a subscription + usage-pool hybrid. Platform layer is seat-based: Hobby free, Pro/Pro Plus/Ultra as individual paid tiers, Teams per-user. The AI usage layer splits into two pools that reset each monthly cycle: an Auto+Composer pool (more included usage when Auto or Composer is selected, aimed at cheaper everyday agentic coding) and an API pool (charged at the model's API price, with individual plans including at least \\$20/month and optional pay-as-you-go). Both pools are shown on visible meters. Models span all frontier OpenAI/Anthropic/Google options. Reasonably transparent, but API-pool burn is not fully predictable under heavy use.",
       "citations": [
         "https://cursor.com/docs/models-and-pricing"
       ],
       "keep": {
-        "zh": "两个用量池 + 可见用量表 + 全前沿模型可选 + Auto/Composer 低成本路径，给了用户在智能、速度与成本间的调节空间。",
+        "zh": "给了在智能、速度、成本间的调节空间：\n- 平台层按席位（Hobby 免费，Pro/Pro Plus/Ultra，Teams 按人头）\n- 用量分两池、月度重置：Auto+Composer 池（更便宜）和 API 池（按模型 API 价，个人档每月至少含 $20）\n- 两池都有用量表，模型覆盖全部前沿厂商",
         "en": "Two usage pools + visible meters + all frontier models + a low-cost Auto/Composer path give users a dial between intelligence, speed, and cost."
       },
       "fix": {
@@ -86,24 +86,24 @@
     },
     "sandbox": {
       "score": 50,
-      "zh": "相对弱项。核心代理在本地 IDE 进程内执行工具调用，隔离弱于容器/VM 优先的框架。安全主要靠 Run Modes（Auto-review、Allowlist、Run Everything）与 permissions.json：后者配置 MCP 工具与终端命令白名单及 autoRun，定义白名单时会覆盖 IDE 内设置。Auto-review 会对已知安全调用放行、对 shell 命令“尽可能”沙箱化、其余交分类器审查——但沙箱是“尽可能/可选”，并非强隔离边界。真正的隔离 VM 仅出现在云端 Cloud Agent，本地默认代理不具备。",
+      "zh": "相对弱项：本地代理在 IDE 进程内跑，强隔离只在云端。",
       "en": "A relative weakness. The core agent executes tool calls inside the local IDE process, with weaker isolation than container/VM-first frameworks. Safety rests mainly on Run Modes (Auto-review, Allowlist, Run Everything) and permissions.json: the latter configures MCP-tool and terminal-command allowlists plus autoRun, overriding the in-app settings when defined. Auto-review lets known-safe calls run, sandboxes shell commands 'when possible,' and routes the rest to a classifier — but the sandbox is 'when possible/optional,' not a hard isolation boundary. True isolated VMs appear only in cloud Cloud Agents, not the default local agent.",
       "citations": [
         "https://cursor.com/docs/reference/permissions",
         "https://cursor.com/docs/agent/security/run-modes"
       ],
       "keep": {
-        "zh": "Run Modes 三档 + permissions.json 细粒度白名单（MCP/终端/autoRun）+ Auto-review 分类器，给了可调的审批与执行护栏。",
+        "zh": "给了可调的审批与执行护栏：\n- Run Modes 三档（Auto-review、Allowlist、Run Everything）\n- permissions.json 细粒度白名单（MCP 工具、终端命令、autoRun），定义后盖过 IDE 内设置\n- Auto-review 对已知安全调用放行、其余交分类器审查",
         "en": "Three Run Modes + fine-grained permissions.json allowlists (MCP/terminal/autoRun) + an Auto-review classifier provide tunable approval-and-execution guardrails."
       },
       "fix": {
-        "zh": "本地代理在 IDE 进程内运行，shell 沙箱仅“尽可能”，缺乏默认的强隔离边界；强隔离仅限云端 Cloud Agent。",
+        "zh": "隔离强度不足：\n- 核心代理在本地 IDE 进程内执行，shell 沙箱只是『尽量/可选』，不是硬边界\n- 真正的隔离 VM 只在云端 Cloud Agent，本地默认代理没有",
         "en": "The local agent runs in-IDE with shell sandboxing only 'when possible' and no default hard-isolation boundary; strong isolation is limited to cloud Cloud Agents."
       }
     },
     "multiagent": {
       "score": 80,
-      "zh": "多代理是真实且成熟的能力。Background/Cloud Agents 是长时运行的远程代理，各自跑在带完整开发环境（克隆仓库、装好依赖、密钥、网络）的隔离 VM 中，可异步从头到尾完成任务并自动开 PR，且可任意数量并行运行。本地侧的 Subagents 拥有独立上下文窗口、可同时启动多个并行执行、可配置专用提示/工具/模型，并将结果回传父代理。文档明确支持编辑器、CLU 与 Cloud Agents 三处使用。并行与隔离的多代理工作流由文档充分背书。",
+      "zh": "多代理是真能力也较成熟，但编排主要由 Cursor 托管。",
       "en": "Multi-agent is a real, mature capability. Background/Cloud Agents are long-running remote agents, each on its own isolated VM with a full dev environment (cloned repo, installed deps, secrets, network), completing tasks asynchronously end-to-end and auto-opening PRs, and you can run as many in parallel as you want. On the local side, Subagents have their own context windows, can be launched simultaneously for parallel execution, are configurable with custom prompts/tools/models, and return results to the parent agent. Docs confirm use across the editor, CLI, and Cloud Agents. Parallel, isolated multi-agent workflows are well-documented.",
       "citations": [
         "https://cursor.com/docs/cloud-agent",
@@ -111,14 +111,18 @@
         "https://cursor.com/docs/subagents"
       ],
       "keep": {
-        "zh": "Cloud/Background Agents 在隔离 VM 中任意并行 + Subagents 独立上下文并行委派，覆盖云端长任务与本地子任务两种并行模式。",
+        "zh": "覆盖云端长任务和本地子任务两种并行：\n- Background/Cloud Agents 跑在配好完整环境的隔离 VM 里，能异步从头做完、自动开 PR，可任意并行\n- 本地 Subagents 有独立上下文窗口，可同时开多个并行、单独配提示/工具/模型",
         "en": "Cloud/Background Agents run unbounded in parallel on isolated VMs + Subagents delegate in parallel with isolated contexts, covering both cloud long-tasks and local subtask parallelism."
       },
       "fix": {
-        "zh": "并行编排主要由 Cursor 托管（云端 VM/IDE 内），缺乏面向复杂多代理拓扑的开放、自定义编排原语。",
+        "zh": "并行编排主要由 Cursor 托管（云端 VM 或 IDE 内），缺面向复杂多代理拓扑的开放、自定义编排原语。",
         "en": "Parallel orchestration is largely Cursor-managed (cloud VMs/in-IDE), lacking open, customizable orchestration primitives for complex multi-agent topologies."
       }
     }
   },
-  "keyFiles": []
+  "keyFiles": [],
+  "version": {
+    "zh": "v3.9",
+    "en": "v3.9"
+  }
 }

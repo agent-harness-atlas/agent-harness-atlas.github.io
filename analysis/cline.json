@@ -6,13 +6,13 @@
   "evidenceBasis": "source",
   "repo": "cline/cline",
   "verdict": {
-    "zh": "Cline 已从单体扩展重构为 SDK core + VS Code 应用双层架构，工程深度明显。其上下文压缩（basic 确定性裁剪 + agentic LLM 摘要双策略）、真实的多智能体团队系统（spawn_agent 子代理 + AgentTeam 并行/串行/流水线 + 邮箱/任务/产出物团队工具）、以及细粒度自动批准沙箱是三大亮点。记忆依赖 .clinerules/skills/workflows 指令文件与文件上下文追踪，成本侧以 token/缓存用量聚合为主、缺少显式美元成本计算。整体是一个能力均衡且多智能体维度突出的开源 harness。",
+    "zh": "Cline 已重构为 SDK core + VS Code 应用双层架构，工程深度明显。三大亮点是双策略上下文压缩、货真价实的多智能体团队系统、以及细粒度的自动批准沙箱。记忆靠指令文件加文件追踪，成本侧偏用量聚合、缺显式美元核算。",
     "en": "Cline has been refactored from a monolithic extension into a two-layer SDK-core + VS Code-app architecture with real engineering depth. Its standout strengths are context compaction (dual basic deterministic-trim + agentic LLM-summary strategies), a genuine multi-agent team system (spawn_agent sub-agents + AgentTeam parallel/sequential/pipeline + mailbox/task/outcome team tools), and a fine-grained auto-approval sandbox. Memory rests on .clinerules/skills/workflows instruction files plus file-context tracking, and cost is handled mainly via token/cache usage aggregation rather than explicit dollar costing. Overall a well-balanced open-source harness that punches notably above average on multi-agent."
   },
   "cells": {
     "memory": {
       "score": 63,
-      "zh": "记忆以指令文件 + 持久追踪为主：cline-rules.ts 同步全局与本地 .clinerules 的开关（含 workflows/hooks/skills 子目录），skills.ts 从 SKILL.md frontmatter 发现技能并按 remote>global>project 优先级解析，workflows.ts 管理工作流开关，FileContextTracker 用 chokidar 监听文件、区分 Cline 编辑与用户编辑并把操作写入任务元数据以防上下文陈旧。属于规则/技能文件型记忆加文件级追踪，而非学习型长期记忆库。",
+      "zh": "记忆靠指令文件加文件级追踪，不是会自学习的长期记忆库。",
       "en": "Memory is instruction-file + persistent-tracking based: cline-rules.ts syncs global and local .clinerules toggles (with workflows/hooks/skills subdirs), skills.ts discovers skills from SKILL.md frontmatter with remote>global>project precedence, workflows.ts manages workflow toggles, and FileContextTracker uses chokidar to watch files, distinguish Cline edits from user edits, and persist operations to task metadata to prevent stale context. This is rules/skill-file memory plus file-level tracking rather than a learned long-term memory store.",
       "citations": [
         "apps/vscode/src/core/context/instructions/user-instructions/cline-rules.ts:L7-L34",
@@ -21,17 +21,17 @@
         "apps/vscode/src/core/context/instructions/user-instructions/workflows.ts:L10-L32"
       ],
       "keep": {
-        "zh": "全局/本地双层规则与工作流开关同步，加上 chokidar 文件追踪区分谁改了文件，能有效防止 diff 编辑时的上下文陈旧。",
+        "zh": "双层规则同步加文件追踪，有效防住编辑时的上下文陈旧：\n- cline-rules.ts 同步全局/本地 .clinerules 及 workflows/hooks/skills\n- skills.ts 按 remote>global>project 解析 SKILL.md\n- FileContextTracker 用 chokidar 分清是 Cline 改的还是用户改的",
         "en": "Two-tier global/local rules and workflow toggle sync, plus chokidar file tracking that distinguishes who edited a file, effectively prevents stale context during diff edits."
       },
       "fix": {
-        "zh": "缺少跨会话的语义/向量记忆与自动事实沉淀，记忆仍需用户手写 .clinerules/SKILL.md，可引入自动化的长期记忆层。",
+        "zh": "缺跨会话的语义/向量记忆和自动事实沉淀，记忆仍要用户手写 .clinerules/SKILL.md；可加一个自动化长期记忆层。",
         "en": "Lacks cross-session semantic/vector memory and automatic fact distillation; memory still relies on user-authored .clinerules/SKILL.md, so an automated long-term memory layer would help."
       }
     },
     "context": {
       "score": 86,
-      "zh": "上下文工程是 Cline 的强项。compaction.ts 构建 prepareTurn 管线，按 reserveTokens/thresholdRatio 解析触发阈值，支持 auto 与 manual（带目标比例）两种模式并发压缩遥测。两套内置策略：basic-compaction 做确定性裁剪，按角色分批移除并原子化保留 tool_use/tool_result 配对、保护首条用户消息与最新轮次；agentic-compaction 用 LLM 生成续写摘要、折叠上一份摘要、抽取并保留文件操作段。还可由用户自定义 compact 回调覆盖。",
+      "zh": "上下文工程是 Cline 的强项：确定性 + LLM 摘要双策略。",
       "en": "Context engineering is a Cline strength. compaction.ts builds the prepareTurn pipeline, resolves trigger thresholds from reserveTokens/thresholdRatio, supports both auto and manual (with target ratio) modes, and emits compaction telemetry. Two built-in strategies: basic-compaction does deterministic trimming, removing by role in waves while atomically preserving tool_use/tool_result pairs and protecting the first user message and latest turn; agentic-compaction uses an LLM to produce a continuation summary, folds in any previous summary, and extracts/preserves a file-operations section. A user-supplied compact callback can override either.",
       "citations": [
         "sdk/packages/core/src/extensions/context/compaction.ts:L226-L429",
@@ -39,17 +39,17 @@
         "sdk/packages/core/src/extensions/context/basic-compaction.ts:L327-L419"
       ],
       "keep": {
-        "zh": "确定性 + LLM 摘要双策略、auto/manual 模式、tool 配对原子移除与文件操作保留，是成熟的上下文压缩设计。",
+        "zh": "成熟的压缩设计，auto/manual 都支持：\n- basic-compaction 确定性裁剪，成对保住 tool_use/tool_result，护住首条用户消息和最近一轮\n- agentic-compaction 用 LLM 生成续写摘要、折叠旧摘要、保留文件操作段\n- 还能用自定义 compact 回调覆盖",
         "en": "Dual deterministic + LLM-summary strategies, auto/manual modes, atomic tool-pair removal, and file-op preservation make for a mature compaction design."
       },
       "fix": {
-        "zh": "token 估算依赖字符数启发式（estimateTokens），跨模型精度有限；可接入真实分词器或模型自带的用量回写来提升触发阈值准确度。",
+        "zh": "token 靠字符数启发式（estimateTokens）估算，跨模型精度有限；可接真实分词器或用模型回写的用量来校准触发阈值。",
         "en": "Token estimation relies on a char-count heuristic (estimateTokens) with limited cross-model accuracy; wiring in a real tokenizer or model-reported usage would sharpen trigger thresholds."
       }
     },
     "skill": {
       "score": 80,
-      "zh": "技能/工具体系丰富。skills.ts 实现 SKILL.md 的发现、frontmatter 校验、disabled 标志读写（与 SDK 的 skills 工具同源）、remote(企业)>global(用户)>project(工作区) 的覆盖解析与远程技能内容加载。工具层在 sdk 的 extensions/tools 下有 bash/editor/file-read/apply-patch/web-fetch/search 等执行器及 presets/路由；MCP 子系统完整：InMemoryMcpManager（带工具缓存 TTL）、oauth、config-loader、policies、client，可注册外部 MCP server 扩充工具。",
+      "zh": "技能和工具体系丰富：SKILL.md 模型 + 三级优先级 + 完整 MCP。",
       "en": "Rich skill/tool surface. skills.ts implements SKILL.md discovery, frontmatter validation, disabled-flag read/write (shared semantics with the SDK skills tool), remote(enterprise)>global(user)>project(workspace) override resolution, and remote-skill content loading. The tool layer under sdk extensions/tools ships bash/editor/file-read/apply-patch/web-fetch/search executors plus presets/routing, and the MCP subsystem is complete: InMemoryMcpManager (with tool-cache TTL), oauth, config-loader, policies, and client to register external MCP servers and extend the toolset.",
       "citations": [
         "apps/vscode/src/core/context/instructions/user-instructions/skills.ts:L28-L82",
@@ -57,17 +57,17 @@
         "sdk/packages/core/src/extensions/mcp/manager.ts:L39-L46"
       ],
       "keep": {
-        "zh": "SKILL.md frontmatter 技能模型 + 三级优先级 + 完整 MCP 管理器，让能力既可本地扩展也可企业远程下发。",
+        "zh": "能力既可本地扩展、也能企业远程下发：\n- skills.ts 发现 SKILL.md、校验 frontmatter、按 remote(企业)>global>project 解析\n- 工具层有 bash/editor/file-read/apply-patch/web-fetch/search 等执行器\n- MCP 子系统完整：InMemoryMcpManager、oauth、config-loader、policies",
         "en": "SKILL.md frontmatter skill model + three-tier precedence + a full MCP manager let capabilities be extended locally and pushed remotely by enterprises."
       },
       "fix": {
-        "zh": "技能启用状态分散在 frontmatter 与 UI 切换两处（代码注释提到需双写同步），存在漂移风险；统一单一真相源会更稳健。",
+        "zh": "技能启用状态分散在 frontmatter 和 UI 切换两处（注释提到要双写同步），有漂移风险；统一单一真相源会更稳。",
         "en": "Skill enabled-state lives in two places — frontmatter and the UI toggle (code comments note both must be written) — creating drift risk; a single source of truth would be more robust."
       }
     },
     "cost": {
       "score": 58,
-      "zh": "成本以用量聚合为主。session-runtime-orchestrator 维护 currentRunUsage（inputTokens/outputTokens 及 cacheRead/cacheWrite 缓存令牌），在 usage-updated 事件中回写本轮用量；spawn_agent 子代理也回传 input/output token 用量；compaction 遥测记录 tokensBefore/After/Saved。模型与 BYOK 经 providerConfig/providerId/modelId 配置驱动。但 core 内未见显式的美元成本计算或预算上限闭环，成本更多是可观测的 token 指标而非主动管控。",
+      "zh": "成本主要是把用量汇总起来看，谈不上主动管控。",
       "en": "Cost is mainly usage aggregation. session-runtime-orchestrator maintains currentRunUsage (inputTokens/outputTokens plus cacheRead/cacheWrite tokens), writing per-run usage back on the usage-updated event; spawn_agent sub-agents also return input/output token usage; and compaction telemetry records tokensBefore/After/Saved. Models and BYOK are driven via providerConfig/providerId/modelId. But core shows no explicit dollar-cost computation or budget-cap loop — cost is observable token metrics rather than active control.",
       "citations": [
         "sdk/packages/core/src/runtime/orchestration/session-runtime-orchestrator.ts:L338-L343",
@@ -75,17 +75,17 @@
         "sdk/packages/core/src/extensions/context/compaction.ts:L391-L410"
       ],
       "keep": {
-        "zh": "逐轮聚合 input/output 与缓存读写令牌，并贯穿到子代理与压缩遥测，用量可观测性扎实。",
+        "zh": "用量可观测性扎实：逐轮聚合 input/output 和缓存读写令牌，贯穿到子代理和压缩遥测。",
         "en": "Per-run aggregation of input/output and cache read/write tokens, propagated through sub-agents and compaction telemetry, gives solid usage observability."
       },
       "fix": {
-        "zh": "core 缺少令牌→美元的定价表与预算/上限熔断；compaction.ts 注释也指出插件/hook 路径绕过遥测，统计存在盲区。",
+        "zh": "缺主动管控和统计盲区：\n- core 里没有令牌→美元的定价表，也没有预算/上限熔断\n- compaction.ts 注释指出插件/hook 路径会绕过遥测，统计有盲区",
         "en": "core lacks a token→dollar pricing table and budget/cap circuit-breaker; compaction.ts comments also note plugin/hook paths bypass telemetry, leaving accounting blind spots."
       }
     },
     "sandbox": {
       "score": 66,
-      "zh": "沙箱体现为细粒度的批准/权限闸门，而非 OS 级隔离。AutoApprovalSettings 提供按动作的开关：读/写文件、是否允许越出工作目录的外部读写、安全命令 vs 全部命令、浏览器、MCP，默认仅自动放行读文件与安全命令。updateAutoApprovalSettings 用版本号做乐观并发合并、保留未指定字段。SDK 侧 requestDesktopToolApproval 以请求/决策文件 IPC 加超时轮询实现人审批；spawn_agent 还能把 toolPolicies 与 requestToolApproval 下发给子代理。",
+      "zh": "沙箱是细粒度的批准闸门，不是 OS 级隔离。",
       "en": "The sandbox manifests as fine-grained approval/permission gating rather than OS-level isolation. AutoApprovalSettings exposes per-action toggles: read/write files, whether to allow reads/writes outside the working directory, safe-commands vs all-commands, browser, and MCP, defaulting to auto-allowing only file reads and safe commands. updateAutoApprovalSettings does version-stamped optimistic-concurrency merging that preserves unspecified fields. On the SDK side, requestDesktopToolApproval implements human approval via request/decision file IPC with timeout polling, and spawn_agent can forward toolPolicies and requestToolApproval to sub-agents.",
       "citations": [
         "apps/vscode/src/shared/AutoApprovalSettings.ts:L1-L44",
@@ -94,17 +94,17 @@
         "sdk/packages/core/src/extensions/tools/team/spawn-agent-tool.ts:L100-L141"
       ],
       "keep": {
-        "zh": "按动作细分的自动批准、工作目录内/外读写区分、安全命令与全命令分级，加上可下发到子代理的审批策略，权限模型清晰可控。",
+        "zh": "权限模型清晰可控：\n- 按动作细分自动批准（读/写文件、是否越出工作目录、安全命令 vs 全命令、浏览器、MCP），默认只放行读文件和安全命令\n- updateAutoApprovalSettings 用版本号做乐观合并\n- 审批策略可下发给子代理",
         "en": "Per-action auto-approval, an in-workspace vs external read/write distinction, safe-vs-all command tiers, and approval policies forwardable to sub-agents give a clear, controllable permission model."
       },
       "fix": {
-        "zh": "本质是批准闸门而非进程/文件系统级真实隔离，恶意命令在批准后无容器/沙箱兜底；引入容器化或系统调用限制可提升安全下限。",
+        "zh": "本质是批准闸门而非进程/文件系统级真实隔离，命令一旦批准就没有容器兜底；引入容器化或系统调用限制能抬高安全下限。",
         "en": "It is fundamentally an approval gate, not real process/filesystem isolation — once approved, a malicious command has no container/sandbox backstop; containerization or syscall restriction would raise the security floor."
       }
     },
     "multiagent": {
       "score": 86,
-      "zh": "Cline 拥有真正的多智能体团队系统（不止 Plan/Act 双模式）。spawn-agent-tool.ts 暴露 spawn_agent 工具，用自定义系统提示创建受控子代理，携带独立工具集、toolPolicies、审批回调与生命周期 hooks，并回传文本/迭代数/用量。multi-agent.ts 的 AgentTeam 为每个成员各起一个 SessionRuntime，支持 routeTo/continueTo、runParallel、runSequential、runPipeline（带消息转换器）与 abortAll，并有 worker-reviewer 现成编排。team-tools.ts 进一步提供 spawn teammate、run task、await runs、broadcast、邮箱读写、mission log、outcome/fragment 评审等成体系团队工具，runtime.ts 导出 AgentTeamsRuntime 与 bootstrapAgentTeams。",
+      "zh": "Cline 有一套货真价实的多代理团队系统，不止 Plan/Act 双模式。",
       "en": "Cline has a genuine multi-agent team system (not just Plan/Act dual-mode). spawn-agent-tool.ts exposes a spawn_agent tool that creates a controlled sub-agent with a custom system prompt, its own toolset, toolPolicies, approval callback, and lifecycle hooks, returning text/iterations/usage. multi-agent.ts's AgentTeam spins up a SessionRuntime per member and supports routeTo/continueTo, runParallel, runSequential, runPipeline (with a message transformer), and abortAll, plus a ready-made worker-reviewer orchestration. team-tools.ts further provides a full suite of team tools — spawn teammate, run task, await runs, broadcast, mailbox read/write, mission log, and outcome/fragment review — and runtime.ts exports AgentTeamsRuntime and bootstrapAgentTeams.",
       "citations": [
         "sdk/packages/core/src/extensions/tools/team/multi-agent.ts:L176-L501",
@@ -113,11 +113,11 @@
         "sdk/packages/core/src/extensions/tools/team/runtime.ts:L15-L54"
       ],
       "keep": {
-        "zh": "spawn_agent 子代理 + AgentTeam 并行/串行/流水线 + 邮箱/任务/产出物评审的团队工具，是开源 harness 中少见的完整多智能体编排栈。",
+        "zh": "开源 harness 里少见的完整多智能体编排栈：\n- spawn_agent 用自定义提示拉起受控子代理，带独立工具集、toolPolicies、审批回调、生命周期 hooks\n- AgentTeam 支持并行/串行/流水线（带消息转换器）和 abortAll\n- team-tools.ts 提供拉队友、广播、邮箱、mission log、产出物评审等团队工具",
         "en": "spawn_agent sub-agents + AgentTeam parallel/sequential/pipeline + mailbox/task/outcome-review team tools form a complete multi-agent orchestration stack rare among open-source harnesses."
       },
       "fix": {
-        "zh": "成员间通过邮箱/广播显式协调，缺少自动的任务分解与调度器；teammate API 有 10 分钟硬超时，长任务编排需人工或上层逻辑补足。",
+        "zh": "成员间靠邮箱/广播显式协调，缺自动的任务分解与调度器；teammate API 有 10 分钟硬超时，长任务编排要人工或上层逻辑补。",
         "en": "Members coordinate explicitly via mailbox/broadcast but there is no automatic task-decomposition scheduler, and the teammate API has a hard 10-minute timeout, so long-running orchestration needs human or higher-level logic to fill the gap."
       }
     }
@@ -139,5 +139,9 @@
     "apps/vscode/src/core/context/instructions/user-instructions/skills.ts",
     "apps/vscode/src/core/context/instructions/user-instructions/workflows.ts",
     "apps/vscode/src/core/context/context-tracking/FileContextTracker.ts"
-  ]
+  ],
+  "version": {
+    "zh": "v3.86.0",
+    "en": "v3.86.0"
+  }
 }

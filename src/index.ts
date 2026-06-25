@@ -22,6 +22,11 @@ import {
 const state = loadState();
 
 function renderHead(): void {
+  const cols = document.getElementById("cols")!;
+  cols.innerHTML =
+    '<col class="c-agent">' +
+    DIMENSIONS.map(() => '<col class="c-dim">').join("") +
+    '<col class="c-score"><col class="c-detail">';
   const head = document.getElementById("head")!;
   let html = '<th class="col-agent"></th>';
   for (const d of DIMENSIONS) {
@@ -34,14 +39,27 @@ function renderHead(): void {
 
 function renderBody(): void {
   const body = document.getElementById("body")!;
-  const rows = AGENTS.map((a) => {
+  // F-rank: order rows by overall score, highest first. Same score → alphabetical
+  // by name (stable, deterministic). Pending (null) sinks to bottom.
+  const ranked = [...AGENTS].sort((a, b) => {
+    const sa = scoreOf(a);
+    const sb = scoreOf(b);
+    if (sa === null && sb === null) return a.name.localeCompare(b.name);
+    if (sa === null) return 1;
+    if (sb === null) return -1;
+    if (sb !== sa) return sb - sa;
+    return a.name.localeCompare(b.name);
+  });
+  const rows = ranked.map((a, i) => {
     let cells = "";
     const br = BRANDS[a.id] || { bg: "var(--accent)", fg: "#fff" };
+    const ver = a.version ? t(a.version, state.lang) : "";
     cells +=
       `<td><div class="agent-cell" data-testid="agent-row-${a.id}">` +
+      `<span class="agent-rank">${i + 1}</span>` +
       `<div class="agent-glyph${br.mono ? " is-mono" : ""}" style="background:${br.bg};color:${br.fg}">${ICONS[a.id] || esc(a.name.slice(0, 2))}</div>` +
       `<div><div class="agent-name">${esc(a.name)}</div>` +
-      `<div class="agent-vendor">${esc(a.vendor) || "—"}</div></div></div></td>`;
+      `${ver ? `<div class="agent-vendor"><span class="agent-ver" title="${t(UI.testedVer, state.lang)}">${esc(ver)}</span></div>` : ""}</div></div></td>`;
 
     for (const d of DIMENSIONS) {
       const c = a.cells[d.id] || { score: null, zh: "—", en: "—", fix: null };

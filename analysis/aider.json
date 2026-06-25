@@ -6,13 +6,13 @@
   "evidenceBasis": "source",
   "repo": "Aider-AI/aider",
   "verdict": {
-    "zh": "Aider 是一个 git 原生、以 repo-map 为核心的结对编程工具，画像极度尖锐——上下文管理与 token 成本控制堪称典范，但刻意不做技能/插件、子代理、沙箱与跨会话记忆。",
+    "zh": "Aider 是 git 原生、以 repo-map 为核心的结对编程工具，画像极度尖锐。上下文管理和 token 成本控制堪称典范，但刻意不做技能/插件、子代理、沙箱和跨会话记忆。",
     "en": "Aider is a git-native, repo-map-centric pair-programming tool with a deliberately spiky profile: world-class context management and token-cost thrift, but no skill/plugin system, no sub-agents, no real sandbox, and essentially no cross-session memory."
   },
   "cells": {
     "memory": {
       "score": 22,
-      "zh": "几乎没有长期记忆。聊天历史只是被追加写入 .aider.chat.history.md 的 markdown，且仅在显式传入 --restore-chat-history（默认 False）时才会重建会话；/save 与 /load 也只重建文件清单而非语义记忆。唯一持久状态是 git 提交历史，没有知识库、向量库或项目记忆。",
+      "zh": "基本没有长期记忆，能留下来的只有 git 提交历史。",
       "en": "Almost no long-term memory. Chat history is just markdown appended to .aider.chat.history.md and is only replayed when the --restore-chat-history flag (default False) is set; /save and /load merely reconstruct the file list, not semantic memory. The only durable state is git commit history — there is no knowledge base, embeddings, or project memory.",
       "citations": [
         "aider/io.py:L1128-L1136",
@@ -21,17 +21,17 @@
         "aider/commands.py:L1497-L1522"
       ],
       "keep": {
-        "zh": "用 git 历史作为可审计的事实来源，配合 markdown 聊天日志，简单、透明、可 grep。",
+        "zh": "用 git 历史当事实来源，配合 markdown 聊天日志，简单、透明、可 grep。",
         "en": "Leans on git history as an auditable source of truth plus a plain markdown chat log — simple, transparent, greppable."
       },
       "fix": {
-        "zh": "增加跨会话的项目级记忆（如持久化的偏好/约定/已学事实），并默认开启历史恢复而非依赖一个默认关闭的开关。",
+        "zh": "聊天历史只是不断追加的 .aider.chat.history.md，而且：\n- 只有显式加 --restore-chat-history（默认关）才会拿它重建会话\n- /save 和 /load 只存取文件清单，不是语义记忆\n- 没有知识库、向量库或项目记忆，跨会话偏好无法自动沉淀",
         "en": "Add cross-session project memory (persisted preferences/conventions/learned facts) and enable history restore by default instead of relying on a flag that ships off."
       }
     },
     "context": {
       "score": 90,
-      "zh": "全场标杆。repo-map 用 tree-sitter 抽取符号、构建 def/ref 图并跑 PageRank 个性化排序（聊天内文件 ×50、被提及标识符 ×10），再用二分搜索把地图精确塞进 token 预算；叠加递归式聊天历史摘要与 ChatChunks 结构化拼装，使大仓库也能用极少 token 获得全局视野。",
+      "zh": "全场标杆：用 repo-map 把大仓库压成极少 token 的全局视野。",
       "en": "Best-in-class. The repo-map extracts symbols via tree-sitter, builds a def/ref graph and runs personalized PageRank (chat files ×50, mentioned idents ×10), then binary-searches the map to fit an exact token budget; layered with recursive chat-history summarization and structured ChatChunks assembly, it gives a whole-repo view for very few tokens.",
       "citations": [
         "aider/repomap.py:L365-L574",
@@ -41,17 +41,17 @@
         "aider/coders/chat_chunks.py:L16-L64"
       ],
       "keep": {
-        "zh": "PageRank 图排序 + 二分预算拟合是真正可量化、可复现的上下文选择机制，且对模型上下文窗口自适应。",
+        "zh": "PageRank 图排序 + 二分预算拟合，是真正可量化、可复现的上下文选择：\n- tree-sitter 抽符号、建定义/引用图\n- 聊天里出现的文件权重 ×50、被提到的标识符 ×10\n- 二分查找把地图精确塞进 token 预算，还随模型上下文自适应",
         "en": "PageRank graph ranking plus binary-search budget fitting is a genuinely measurable, reproducible context-selection mechanism that adapts to the model's context window."
       },
       "fix": {
-        "zh": "排序仍偏静态结构信号，可引入语义相似度/最近编辑热度，并为超大仓库提供增量重排以降低首扫开销。",
+        "zh": "排序仍偏静态结构信号，可引入语义相似度或最近编辑热度，并为超大仓库做增量重排以降低首扫开销。",
         "en": "Ranking still relies on static structural signals; blend in semantic similarity / recent-edit recency, and add incremental re-ranking for very large repos to cut first-scan cost."
       }
     },
     "skill": {
       "score": 16,
-      "zh": "刻意最小化，没有 MCP、没有插件系统、没有技能加载器（全仓库 grep 无 mcp/plugin/subagent 命中）。扩展面仅限硬编码的 cmd_* 斜杠命令与固定的一组 edit-format coder；functions 仅服务于函数调用 coder，并非面向用户的可扩展工具，register_models 也只加载模型元数据而非工具。",
+      "zh": "扩展能力被刻意做到最小：没有 MCP、没有插件、没有技能加载器。",
       "en": "Deliberately minimal: no MCP, no plugin system, no skill loader (a whole-repo grep for mcp/plugin/subagent returns nothing). The extension surface is just hardcoded cmd_* slash commands plus a fixed set of edit-format coders; `functions` only serves the function-calling coders and is not a user-extensible tool system, and register_models loads model metadata, not tools.",
       "citations": [
         "aider/commands.py:L445-L466",
@@ -60,17 +60,17 @@
         "aider/models.py:L1085-L1112"
       ],
       "keep": {
-        "zh": "保持核心精简、零外部工具协议，降低攻击面与维护负担，斜杠命令集已覆盖日常工作流。",
+        "zh": "核心精简、零外部工具协议，攻击面和维护负担都低，斜杠命令集已覆盖日常工作流。",
         "en": "Keeps the core lean with zero external tool protocols, lowering attack surface and maintenance burden; the built-in slash-command set already covers everyday workflows."
       },
       "fix": {
-        "zh": "若要支持第三方能力，可引入 MCP 客户端或一个轻量插件/工具注册接口，让用户在不改源码的情况下扩展。",
+        "zh": "能扩展的只有写死的 cmd_* 斜杠命令和固定的 edit-format coder（全仓 grep 不到 mcp/plugin/subagent）。若要支持第三方能力，可引入 MCP 客户端或一个轻量插件/工具注册接口。",
         "en": "To support third-party capabilities, add an MCP client or a lightweight plugin/tool-registration interface so users can extend without forking the source."
       }
     },
     "cost": {
       "score": 85,
-      "zh": "token 节流非常强。repo-map 默认仅 1024 token（上限约 4096，按模型上下文自适应）把上下文压到最小；配合 prompt 缓存（cache_control 头 + 后台缓存预热）、用 weak_model 做摘要省钱，以及逐条/逐会话的精细 token 与成本核算（含各家缓存读写差异化定价）。",
+      "zh": "省 token 的功夫很到家，成本控制是一等公民。",
       "en": "Very strong token thrift. The repo-map defaults to just 1024 tokens (capped ~4096, adaptive to the model context) to keep context minimal; combined with prompt caching (cache_control headers + background cache warming), a cheaper weak_model for summarization, and detailed per-message/per-session token and cost accounting that models each provider's cache read/write pricing.",
       "citations": [
         "aider/models.py:L782-L789",
@@ -79,17 +79,17 @@
         "aider/coders/chat_chunks.py:L28-L55"
       ],
       "keep": {
-        "zh": "把成本控制做成一等公民：自适应地图预算 + 缓存预热 + 逐消息成本可视化，让用户对花费心中有数。",
+        "zh": "把成本做成核心能力，让用户对花费心中有数：\n- repo-map 默认仅 1024 token（上限约 4096），还随模型上下文自适应\n- prompt 缓存带 cache_control 头和后台预热\n- 用更便宜的 weak_model 跑摘要，逐条/逐会话精细计费",
         "en": "Treats cost as a first-class concern: adaptive map budget + cache warming + per-message cost visibility give users clear spend awareness."
       },
       "fix": {
-        "zh": "成本核算依赖 litellm 的费率表，可在缺表/自托管模型时给出更稳健回退，并提供会话预算上限与自动降级策略。",
+        "zh": "成本核算依赖 litellm 的费率表，缺表或自托管模型时回退不稳；可补会话预算上限与自动降级策略。",
         "en": "Cost accounting depends on litellm's price tables; provide a more robust fallback for missing tables / self-hosted models, plus session budget caps and an auto-downgrade strategy."
       }
     },
     "sandbox": {
       "score": 30,
-      "zh": "无真正隔离。Aider 直接编辑本地工作区文件，靠确认提示（编辑未加入文件、新建文件、运行 shell 都需 confirm，shell 还要求显式 yes）+ git 自动提交/`/undo` 作为安全网，并尊重 gitignore。但没有容器、文件系统沙箱或网络限制，shell 命令直接在仓库 cwd 执行，安全性本质上依赖 git 可回滚而非隔离。",
+      "zh": "谈不上真正的隔离，安全感来自『git 能回滚』而非『隔离』。",
       "en": "No true isolation. Aider edits local workspace files directly, relying on confirmation prompts (editing un-added files, creating files, and running shell all require confirm; shell additionally requires an explicit yes) plus git auto-commit / `/undo` as the safety net, and it honors gitignore. But there is no container, filesystem jail, or network restriction — shell commands run straight in the repo cwd, so safety rests on git revertability rather than isolation.",
       "citations": [
         "aider/coders/base_coder.py:L2191-L2240",
@@ -98,17 +98,17 @@
         "aider/coders/base_coder.py:L2202-L2204"
       ],
       "keep": {
-        "zh": "git 作为安全网很务实：每次编辑前可脏提交、编辑后自动提交，配合 /undo 让任何改动可回滚、可审计。",
+        "zh": "git 当安全网很务实：编辑前可脏提交、编辑后自动提交，配合 /undo 让任何改动可回滚、可审计，也尊重 gitignore。",
         "en": "Git-as-safety-net is pragmatic: dirty-commit before edits, auto-commit after, and /undo make every change revertable and auditable."
       },
       "fix": {
-        "zh": "引入可选的执行沙箱（容器/受限子进程）、命令白名单与网络隔离，减少对‘用户每次都正确确认’的依赖。",
+        "zh": "没有容器、文件系统沙箱或网络限制：\n- shell 命令直接在仓库目录里跑\n- 改文件、新建文件、跑 shell 都靠确认提示兜底\n- 可引入可选的执行沙箱、命令白名单与网络隔离，少依赖『用户每次都确认对』",
         "en": "Add an optional execution sandbox (container/restricted subprocess), command allowlists, and network isolation to reduce reliance on the user confirming correctly every time."
       }
     },
     "multiagent": {
       "score": 20,
-      "zh": "本质单进程结对编辑，无子代理派生、无并行任务。最接近的是 architect→editor 的顺序交接：architect coder 在同进程内同步创建一个 editor coder 来落地修改，仍是单线程串行；摘要器虽跑在后台线程，但只是异步摘要而非独立代理。没有任务分解、并发 worker 或代理编排。",
+      "zh": "本质是单进程结对编程，不派生子代理、也没有并行任务。",
       "en": "Fundamentally single-process pair editing with no sub-agent spawning and no parallel tasks. The closest analog is the sequential architect→editor handoff, where the architect coder synchronously creates an editor coder in-process to apply changes — still single-threaded and serial; the summarizer runs on a background thread but that is async summarization, not an independent agent. There is no task decomposition, concurrent workers, or agent orchestration.",
       "citations": [
         "aider/coders/architect_coder.py:L11-L48",
@@ -116,11 +116,11 @@
         "aider/coders/base_coder.py:L1002-L1034"
       ],
       "keep": {
-        "zh": "architect/editor 的角色拆分是个务实的‘规划-执行’轻量编排，单进程内即可获得分工收益。",
+        "zh": "architect/editor 的角色拆分是务实的『规划-执行』轻量编排，单进程内就能分工。",
         "en": "The architect/editor role split is a pragmatic, lightweight 'plan-then-execute' orchestration that gains division-of-labor benefits within a single process."
       },
       "fix": {
-        "zh": "若要支持并行，可引入真正的子代理派生与任务队列，让多个 editor 在隔离工作树上并发处理独立文件集。",
+        "zh": "最接近多代理的只是 architect→editor 顺序交接，仍是单线程串行；摘要器虽在后台线程但只做异步摘要。若要并行，需引入真正的子代理派生与任务队列，让多个 editor 在隔离工作树上并发。",
         "en": "To support parallelism, add real sub-agent spawning and a task queue so multiple editors can work concurrently on independent file sets in isolated worktrees."
       }
     }
@@ -137,5 +137,9 @@
     "aider/models.py",
     "aider/io.py",
     "aider/args.py"
-  ]
+  ],
+  "version": {
+    "zh": "v0.86.0",
+    "en": "v0.86.0"
+  }
 }

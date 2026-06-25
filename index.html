@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Agent Harness Atlas</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -91,10 +92,15 @@
 
     .matrix-shell { border: 1px solid var(--rule); border-radius: var(--r); background: var(--paper); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 18px; }
     .scroll-x { overflow-x: auto; }
-    table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 860px; }
-    thead th { position: sticky; top: 0; background: var(--raised); text-align: left; padding: 15px 14px; border-bottom: 1px solid var(--rule-strong); white-space: nowrap; vertical-align: bottom; }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1092px; table-layout: fixed; }
+    /* equal-width dimension columns: agent col fixed, 6 dims share equal width, score+detail fixed */
+    col.c-agent { width: 220px; }
+    col.c-dim { width: 116px; }
+    col.c-score { width: 92px; }
+    col.c-detail { width: 84px; }
+    thead th { position: sticky; top: 0; background: var(--raised); text-align: left; padding: 15px 12px; border-bottom: 1px solid var(--rule-strong); white-space: normal; vertical-align: bottom; }
     thead th .dim-zh { display: block; font-family: var(--serif); color: var(--ink); font-weight: 600; font-size: 14px; letter-spacing: -0.005em; }
-    thead th .dim-en { display: block; font: 400 9.5px/1.2 var(--mono); color: var(--faint); margin-top: 4px; letter-spacing: 0.14em; text-transform: uppercase; }
+    thead th .dim-en { display: block; font: 400 8.5px/1.3 var(--mono); color: var(--faint); margin-top: 4px; letter-spacing: 0.01em; text-transform: uppercase; white-space: nowrap; }
     thead th.col-agent { left: 0; z-index: 2; min-width: 208px; }
     thead th.col-agent .dim-en { letter-spacing: 0.2em; }
     thead th.col-score { text-align: right; }
@@ -104,14 +110,16 @@
     tbody tr:last-child td { border-bottom: 0; }
     tbody tr:hover td { background: color-mix(in srgb, var(--accent) 5%, transparent); }
 
-    .agent-cell { position: sticky; left: 0; z-index: 1; background: var(--paper); padding: 15px 16px 15px 18px; display: flex; align-items: center; gap: 13px; min-width: 208px; border-right: 1px solid var(--rule); }
+    .agent-cell { position: sticky; left: 0; z-index: 1; background: var(--paper); padding: 15px 16px 15px 16px; display: flex; align-items: center; gap: 11px; min-width: 220px; border-right: 1px solid var(--rule); }
     tbody tr:hover .agent-cell { background: color-mix(in srgb, var(--accent) 5%, var(--paper)); }
+    .agent-rank { flex: none; width: 18px; text-align: center; font: 600 13px/1 var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
     .agent-glyph { width: 36px; height: 36px; flex: none; border-radius: 8px; display: grid; place-items: center; font: 700 15px/1 var(--serif); letter-spacing: -0.02em; color: #fff; }
     .agent-glyph svg { width: 20px; height: 20px; display: block; color: inherit; }
     .agent-glyph.is-mono { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10); }
     html[data-theme="dark"] .agent-glyph.is-mono { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16), 0 0 0 1px var(--rule-strong); }
     .agent-name { font: 600 15px/1.15 var(--serif); letter-spacing: -0.01em; }
-    .agent-vendor { font: 400 10px/1 var(--mono); color: var(--faint); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .agent-vendor { margin-top: 4px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .agent-ver { font: 400 10px/1.3 var(--mono); color: var(--faint); letter-spacing: 0.08em; text-transform: none; white-space: nowrap; }
 
     /* numeric score cell — editorial serif numerals */
     td.cell { position: relative; padding: 13px 14px; text-align: center; }
@@ -207,6 +215,7 @@
       <div class="matrix-shell">
         <div class="scroll-x">
           <table id="matrix">
+            <colgroup id="cols"></colgroup>
             <thead><tr id="head"></tr></thead>
             <tbody id="body"></tbody>
           </table>

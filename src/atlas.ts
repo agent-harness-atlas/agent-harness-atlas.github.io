@@ -35,6 +35,26 @@ export function md(s: string): string {
   return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
 }
 
+// Rich inline renderer for keep/fix bodies: supports `code` spans AND turns a
+// block whose lines start with "- " into a real <ul><li> bullet list (so long
+// detail text breaks out instead of cramming into one run-on line). A block
+// with no bullet lines renders as a plain inline string (code spans still work).
+export function mdRich(s: string): string {
+  const raw = String(s == null ? "" : s);
+  const lines = raw.split(/\r?\n/);
+  const hasBullets = lines.some((ln) => /^\s*[-•]\s+/.test(ln));
+  if (!hasBullets) return md(raw);
+  const items: string[] = [];
+  let lead = "";
+  for (const ln of lines) {
+    const m = ln.match(/^\s*[-•]\s+(.*)$/);
+    if (m) items.push(`<li>${md(m[1].trim())}</li>`);
+    else if (ln.trim()) lead += (lead ? " " : "") + ln.trim();
+  }
+  const leadHtml = lead ? `<span class="tag-lead">${md(lead)}</span>` : "";
+  return leadHtml + (items.length ? `<ul class="tag-list">${items.join("")}</ul>` : "");
+}
+
 export function scoreOf(a: AgentAnalysis): number | null {
   let sum = 0;
   let n = 0;

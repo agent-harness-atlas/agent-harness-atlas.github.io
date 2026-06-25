@@ -17,6 +17,7 @@ export interface AgentAnalysis {
   name: string;
   vendor: string;
   lang: string;
+  version?: Bilingual;
   evidenceBasis: EvidenceBasis;
   repo: string | null;
   evidenceNote?: Bilingual;

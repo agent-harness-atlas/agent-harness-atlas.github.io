@@ -16,7 +16,7 @@ export const AGENTS: AgentAnalysis[] = [
   {
     "id": "claude-code",
     "name": "Claude Code",
-    "vendor": "Anthropic",
+    "vendor": "闭源",
     "lang": "TypeScript",
     "evidenceBasis": "docs",
     "repo": null,
@@ -25,30 +25,30 @@ export const AGENTS: AgentAnalysis[] = [
       "en": "Conclusions are grounded in Anthropic's official documentation and public plugins/hooks, NOT core source (Claude Code ships as a minified bundle)."
     },
     "verdict": {
-      "zh": "基于官方文档判断，Claude Code 在记忆、技能扩展面与子代理三方面属第一梯队：CLAUDE.md 分层记忆叠加自动记忆（MEMORY.md），Agent Skills/MCP/斜杠命令构成业内最宽的扩展面，子代理（Task/Agent 工具）独立上下文窗口且可路由到更便宜的模型。沙箱（六种权限模式 + 操作系统级 Bash 隔离）同样成熟。上下文压缩（auto-compact）可靠但本质有损。成本是相对短板：虽有自动 prompt 缓存、压缩与廉价模型路由等成熟省钱手段，但旗舰 Opus 仍是高价档位，且新分词器对相同文本最多多用约 35% token。",
+      "zh": "基于官方文档判断，Claude Code 在记忆、技能扩展和子代理三方面属第一梯队，沙箱也成熟。上下文压缩可靠但本质有损。成本是相对短板——省钱手段齐全，可旗舰 Opus 单价偏高、新分词器还多吃 token。",
       "en": "On a docs basis, Claude Code is top-tier on memory, extensibility surface, and sub-agents: CLAUDE.md layered memory plus auto memory (MEMORY.md); Agent Skills/MCP/slash commands form the industry's widest extension surface; sub-agents (the Task/Agent tool) get isolated context windows and can route to cheaper models. Sandboxing (six permission modes + OS-level Bash isolation) is equally mature. Auto-compact context compaction is reliable but inherently lossy. Cost is the relative weak point: despite mature savings levers (automatic prompt caching, compaction, cheap-model routing), flagship Opus remains the premium tier and its new tokenizer can use up to ~35% more tokens for the same text."
     },
     "cells": {
       "memory": {
         "score": 90,
-        "zh": "文档描述了两套互补的持久化机制：(1) CLAUDE.md 分层记忆，按加载顺序覆盖『受管策略 → 用户(~/.claude/CLAUDE.md) → 项目(./CLAUDE.md 或 .claude/CLAUDE.md) → 本地(CLAUDE.local.md)』四级作用域，支持 @path 导入（最多 4 跳）、.claude/rules/ 按路径/文件类型作用域、子目录按需加载，并用 /init 自动生成；(2) 自动记忆——Claude 依据你的纠正与偏好自行写入 MEMORY.md，每次会话开头加载其前 200 行或 25KB（以先到者为准）。分层、可共享、可版本化，是公认强项。",
+        "zh": "记忆是公认的强项：CLAUDE.md 分层记忆加自动记忆，双层互补。",
         "en": "The docs describe two complementary persistence systems: (1) CLAUDE.md layered memory with four scopes loaded in order — managed policy → user (~/.claude/CLAUDE.md) → project (./CLAUDE.md or .claude/CLAUDE.md) → local (CLAUDE.local.md) — plus @path imports (max 4 hops), path/file-type-scoped .claude/rules/, on-demand subdirectory loading, and /init to bootstrap; (2) auto memory, where Claude writes MEMORY.md itself from your corrections and preferences, with its first 200 lines or 25KB (whichever comes first) loaded at the start of each session. Layered, shareable, and version-controllable — a recognized strength.",
         "citations": [
           "https://code.claude.com/docs/en/memory",
           "https://code.claude.com/docs/en/context-window"
         ],
         "keep": {
-          "zh": "保持 CLAUDE.md 四级作用域 + @import + .claude/rules/ 路径作用域，并叠加自我书写的自动记忆（MEMORY.md），形成既可团队共享又能跨会话自学习的双层记忆。",
+          "zh": "既能团队共享、又能跨会话自学习：\n- CLAUDE.md 四级作用域（受管策略→用户→项目→本地），支持 @path 导入（最多 4 跳）\n- .claude/rules/ 按路径或文件类型限定生效，子目录按需加载，/init 一键生成\n- 自动记忆：Claude 按你的纠正和偏好自己写 MEMORY.md",
           "en": "Keep the four-scope CLAUDE.md hierarchy + @import + path-scoped .claude/rules/, layered with self-authored auto memory (MEMORY.md) — a dual system that is both team-shareable and self-learning across sessions."
         },
         "fix": {
-          "zh": "文档明确 CLAUDE.md 与自动记忆都是『上下文而非强制配置』，且建议单文件 < 200 行——记忆遵循度依赖模型自觉，强约束仍需改用 PreToolUse 钩子；自动记忆的 200 行/25KB 加载上限也意味着长期知识会被截断。",
+          "zh": "文档明确 CLAUDE.md 和自动记忆都是『上下文而非强制配置』：\n- 记忆遵循度靠模型自觉，强约束仍要改用 PreToolUse 钩子\n- 自动记忆每次只加载前 200 行或 25KB，长期知识会被截断",
           "en": "The docs state CLAUDE.md and auto memory are 'context, not enforced configuration' and advise < 200 lines per file — adherence relies on the model's discretion, so hard guarantees still require a PreToolUse hook, and the 200-line/25KB auto-memory load cap means long-horizon knowledge can be truncated."
         }
       },
       "context": {
         "score": 83,
-        "zh": "文档说明 Claude Code 随接近上限自动管理上下文：先清理较早的工具输出，必要时再对会话进行摘要（auto-compaction），保留你的请求与关键代码片段，丢弃早期的详细指令/工具结果。可用 /compact 加自定义指令（如『聚焦代码样例与 API 用法』）或在 CLAUDE.md 写入压缩偏好来引导保留内容；/context 查看占用、/clear 在任务间清空、子代理把探索/日志隔离到独立窗口。上下文窗口可视化页逐步演示了启动占用与压缩。机制成熟但摘要本质有损。",
+        "zh": "机制成熟，但摘要本质有损：接近上限时自动分级压缩。",
         "en": "The docs describe automatic context management as the window fills: Claude clears older tool outputs first, then summarizes the conversation if needed (auto-compaction), preserving your requests and key code snippets while discarding early detailed instructions/tool results. You can steer it with /compact plus custom instructions (e.g. 'Focus on code samples and API usage') or compaction preferences in CLAUDE.md; /context inspects usage, /clear resets between tasks, and sub-agents isolate exploration/logs into separate windows. The context-window visualization page walks through startup usage and compaction. Mature, but summarization is inherently lossy.",
         "citations": [
           "https://code.claude.com/docs/en/how-claude-code-works",
@@ -56,17 +56,17 @@ export const AGENTS: AgentAnalysis[] = [
           "https://code.claude.com/docs/en/costs"
         ],
         "keep": {
-          "zh": "保持『先清工具输出、再摘要会话』的分级压缩策略，以及可用 /compact 与 CLAUDE.md 指令自定义保留重点的能力——既延长会话又把控制权交还用户。",
+          "zh": "分级压缩 + 控制权交还用户：先清早期工具输出、再摘要会话，可用 /compact 或 CLAUDE.md 指令自定义保留重点。",
           "en": "Keep the tiered strategy of 'clear tool outputs first, then summarize the conversation,' plus user-steerable retention via /compact and CLAUDE.md instructions — extending sessions while handing control back to the user."
         },
         "fix": {
-          "zh": "压缩是有损摘要：早期详细指令会被丢弃，长任务中细节流失不可避免；文档建议主动用 /clear、/context 与子代理来弥补，说明单靠 auto-compact 难以无损保真，缺少结构化的可检索外部记忆作为兜底。",
+          "zh": "早期详细指令会被丢，长任务细节流失难免：\n- 文档自己也建议用 /clear、/context、子代理来弥补\n- 缺一个结构化、可检索的外部记忆当兜底",
           "en": "Compaction is lossy summarization: early detailed instructions get discarded and detail loss over long tasks is unavoidable; the docs recommend compensating with proactive /clear, /context, and sub-agents, signaling that auto-compact alone can't guarantee fidelity and that a structured, retrievable external store as a fallback is absent."
         }
       },
       "skill": {
         "score": 95,
-        "zh": "扩展面是 Claude Code 的最强项，也是同类中最宽的。文档涵盖：(1) Agent Skills——以 SKILL.md 为核心的开放标准，正文按需加载（渐进披露），引用材料未用前几乎不耗 token，且自定义命令已并入技能（.claude/commands/x.md 与 .claude/skills/x/SKILL.md 都生成 /x）；(2) MCP——通过模型上下文协议接入数百个外部工具/数据源，工具定义默认延迟加载（仅工具名先进上下文）；(3) 斜杠命令——内置命令、捆绑技能与自定义 /command 的完整体系。再加上钩子、子代理与插件，构成可组合、可共享、跨工具通用的扩展生态。",
+        "zh": "扩展是 Claude Code 最强的一项，面也是同类里最宽。",
         "en": "Extensibility is Claude Code's strongest area and the widest in its class. The docs cover: (1) Agent Skills — an open standard centered on SKILL.md with on-demand body loading (progressive disclosure) so reference material costs almost nothing until used, and custom commands merged into skills (.claude/commands/x.md and .claude/skills/x/SKILL.md both create /x); (2) MCP — hundreds of external tools/data sources via the Model Context Protocol, with tool definitions deferred by default so only tool names enter context first; (3) slash commands — a full system of built-ins, bundled skills, and custom /command. Add hooks, sub-agents, and plugins, and you get a composable, shareable, cross-tool extension ecosystem.",
         "citations": [
           "https://code.claude.com/docs/en/skills",
@@ -74,17 +74,17 @@ export const AGENTS: AgentAnalysis[] = [
           "https://code.claude.com/docs/en/commands"
         ],
         "keep": {
-          "zh": "保持 SKILL.md 渐进披露 + 命令并入技能 + MCP 工具定义延迟加载的设计——既给最广扩展面，又把 token 成本压到『用到才付费』。",
+          "zh": "扩展面最广，又把 token 成本压到『用到才付费』：\n- Agent Skills：SKILL.md 渐进披露，正文按需加载，自定义命令已并入技能\n- MCP：接几百个外部工具/数据源，工具定义延迟加载\n- 再加斜杠命令、钩子、子代理、插件",
           "en": "Keep SKILL.md progressive disclosure + commands-merged-into-skills + deferred MCP tool definitions — delivering the widest surface while keeping token cost on a 'pay only when used' basis."
         },
         "fix": {
-          "zh": "面之广带来配置与治理复杂度：技能、命令、MCP 服务器、钩子、子代理、插件多套机制并存，文档需专门指引『何时用哪一个』；MCP 服务器还引入第三方供应链与权限审批面，需配合权限/沙箱治理。",
+          "zh": "面太广带来配置与治理复杂度：\n- 技能、命令、MCP、钩子、子代理、插件多套机制并存，文档要专门教『何时用哪个』\n- MCP 还引入第三方供应链与权限审批面，需配合沙箱治理",
           "en": "Breadth brings configuration and governance complexity: skills, commands, MCP servers, hooks, sub-agents, and plugins coexist, and the docs need dedicated guidance on 'when to use which'; MCP servers also add a third-party supply-chain and approval surface that must be governed via permissions/sandboxing."
         }
       },
       "cost": {
         "score": 62,
-        "zh": "成本工具本身相当成熟：文档说明 Claude Code 自动用 prompt 缓存（命中读取约为标准输入价的 0.1x，写入为 1.25x/5 分钟或 2x/1 小时）降低重复系统提示开销，并用 auto-compaction 缩减历史；还提供 /usage、/cost 追踪、团队支出上限、按子代理路由到更便宜的 Haiku、以及 MCP 工具定义延迟加载。但本维度是相对短板：旗舰 Opus 仍是高价档（Opus 4.x 约 $5/MTok 输入、$25/MTok 输出，对比 Sonnet $3/$15、Haiku $1/$5），且 Opus 4.7+ 新分词器对相同文本最多多用约 35% token，抵消部分省钱红利。企业部署文档给出人均约 $13/活跃日、$150–250/月的参考。",
+        "zh": "省钱工具做得全，但旗舰 Opus 单价偏高，是相对短板。",
         "en": "The cost tooling itself is mature: the docs note Claude Code automatically uses prompt caching (cache reads ~0.1x base input; writes 1.25x on the 5-min cache or 2x on the 1-hour cache) to cut repeated system-prompt cost, plus auto-compaction to shrink history; it also offers /usage and /cost tracking, team spend limits, per-sub-agent routing to cheaper Haiku, and deferred MCP tool definitions. But this dimension is the relative weak point: flagship Opus stays in the premium tier (Opus 4.x ~$5/MTok input, $25/MTok output, vs Sonnet $3/$15 and Haiku $1/$5), and the new Opus 4.7+ tokenizer can use up to ~35% more tokens for the same text, eroding some savings. Enterprise docs cite ~$13 per developer per active day and $150–250/month as references.",
         "citations": [
           "https://code.claude.com/docs/en/costs",
@@ -92,17 +92,17 @@ export const AGENTS: AgentAnalysis[] = [
           "https://platform.claude.com/docs/en/about-claude/pricing"
         ],
         "keep": {
-          "zh": "保持开箱即用的自动 prompt 缓存 + auto-compaction + 廉价模型路由（子代理 Haiku）+ /usage/团队支出上限这套省钱组合，让重复内容近乎免费、历史可压缩、简单任务走便宜模型。",
+          "zh": "开箱即用的省钱组合，让重复内容近乎免费、简单任务走便宜模型：\n- 自动 prompt 缓存（命中约为输入价 0.1x）\n- auto-compaction 缩短历史\n- 子代理可路由到更便宜的 Haiku，配 /usage、/cost、团队支出上限",
           "en": "Keep the out-of-the-box savings stack — automatic prompt caching + auto-compaction + cheap-model routing (Haiku sub-agents) + /usage and team spend limits — making repeated content nearly free, history compressible, and simple tasks served by cheaper models."
         },
         "fix": {
-          "zh": "旗舰 Opus 单价仍显著高于 Sonnet/Haiku，叠加新分词器最多 +35% token，使复杂任务默认走 Opus 时成本承压；文档主要靠『改用 Sonnet/Haiku、勤 /clear、缩小上下文』来对冲，治理在很大程度上落到用户的模型选择与上下文卫生上。",
+          "zh": "复杂任务默认走 Opus 时成本承压：\n- Opus 4.x 约输入 $5、输出 $25/MTok，远高于 Sonnet（$3/$15）和 Haiku（$1/$5）\n- 新分词器同样文本最多多吃约 35% token\n- 治理很大程度上落到用户的模型选择和上下文卫生上",
           "en": "Flagship Opus pricing remains well above Sonnet/Haiku, and the new tokenizer's up-to-+35% token overhead pressures cost when complex tasks default to Opus; the docs mostly hedge via 'switch to Sonnet/Haiku, /clear often, shrink context,' pushing governance largely onto the user's model choice and context hygiene."
         }
       },
       "sandbox": {
         "score": 88,
-        "zh": "安全模型成熟且分层。文档描述分级权限系统（只读免批；Bash 执行、文件修改需批准）与六种权限模式：default、acceptEdits、plan、auto、dontAsk、bypassPermissions；可叠加 allow/deny/ask 规则，且 deny 先于 allow 评估、跨作用域生效，并有受保护路径在除 bypass 外的所有模式下永不自动批准。Bash 沙箱提供操作系统级隔离（macOS Seatbelt / Linux bubblewrap），按路径与网络域限定可触达范围并对子进程强制执行；可经受管设置在组织级强制。/permissions 提供可视化管理。",
+        "zh": "安全模型成熟且分层：权限分级 + OS 级 Bash 沙箱。",
         "en": "The security model is mature and layered. The docs describe a tiered permission system (reads need no approval; Bash execution and file modification do) and six permission modes: default, acceptEdits, plan, auto, dontAsk, bypassPermissions. Layer allow/deny/ask rules on top, with deny evaluated before allow and applying across scopes, plus protected paths that are never auto-approved in any mode except bypass. The Bash sandbox gives OS-level isolation (macOS Seatbelt / Linux bubblewrap), bounding which paths and network domains commands can reach and enforcing it on child processes; it can be mandated org-wide via managed settings. /permissions provides a visual manager.",
         "citations": [
           "https://code.claude.com/docs/en/permissions",
@@ -110,17 +110,17 @@ export const AGENTS: AgentAnalysis[] = [
           "https://code.claude.com/docs/en/sandboxing"
         ],
         "keep": {
-          "zh": "保持『权限模式 + allow/deny/ask 规则（deny 优先）+ 受保护路径 + 操作系统级 Bash 沙箱 + 受管设置组织级强制』的纵深防御，让自主执行在可审计的边界内进行。",
+          "zh": "纵深防御，让自主执行在可审计的边界内进行：\n- 六种权限模式 + allow/deny/ask 规则（deny 优先、跨作用域生效）\n- 受保护路径除 bypass 外永不自动放行\n- macOS Seatbelt / Linux bubblewrap 做 OS 级隔离，可经受管设置组织级强制",
           "en": "Keep the defense-in-depth of 'permission modes + allow/deny/ask rules (deny wins) + protected paths + OS-level Bash sandbox + org-wide managed settings,' letting autonomous execution run inside auditable boundaries."
         },
         "fix": {
-          "zh": "bypassPermissions 会跳过几乎所有检查（文档限定仅用于隔离容器/VM），auto 模式以后台安全检查换取近乎无提示，存在配置错误即放权的风险；沙箱依赖宿主 OS 原语（Seatbelt/bubblewrap），跨平台一致性与对无法沙箱化命令的回退仍需用户理解其边界。",
+          "zh": "放权风险集中在两个口子：\n- bypassPermissions 几乎跳过所有检查（文档限定只用于隔离容器/VM）\n- auto 模式拿后台检查换近乎无提示，配置错误就等于放权\n- 沙箱依赖宿主 OS 原语，跨平台一致性与回退边界需用户自己清楚",
           "en": "bypassPermissions skips nearly all checks (the docs restrict it to isolated containers/VMs) and auto mode trades near-promptless execution for background safety checks, so misconfiguration can over-grant; the sandbox relies on host OS primitives (Seatbelt/bubblewrap), so cross-platform consistency and the fallback for non-sandboxable commands still require the user to understand the boundaries."
         }
       },
       "multiagent": {
         "score": 88,
-        "zh": "子代理故事成熟。文档说明每个子代理运行于独立上下文窗口，拥有自定义系统提示、特定工具访问与独立权限；Claude 依据子代理 description 自动委派（Task 工具在 v2.1.63 后更名为 Agent）。内置 Explore（Haiku、只读）、Plan（继承模型、只读）、general-purpose（全工具）等，自定义子代理可按需选模型——简单任务可路由到 Haiku 控成本。子代理把探索/日志隔离在自身窗口、仅回传摘要，从而节省主上下文。更进一步还有后台代理（并行独立会话）与实验性 agent teams（队员间直接消息、共享任务）。Agent SDK 亦支持。",
+        "zh": "子代理已相当成熟，但横向协作仍是实验特性。",
         "en": "The sub-agent story is mature. The docs state each sub-agent runs in its own context window with a custom system prompt, specific tool access, and independent permissions; Claude auto-delegates based on a sub-agent's description (the Task tool was renamed Agent in v2.1.63). Built-ins include Explore (Haiku, read-only), Plan (inherits model, read-only), and general-purpose (all tools), and custom sub-agents can pick a model — routing simple tasks to Haiku to control cost. Sub-agents isolate exploration/logs in their own window and return only a summary, saving the main context. Beyond that there are background agents (parallel independent sessions) and experimental agent teams (direct inter-agent messaging, shared tasks). The Agent SDK supports them too.",
         "citations": [
           "https://code.claude.com/docs/en/sub-agents",
@@ -128,32 +128,36 @@ export const AGENTS: AgentAnalysis[] = [
           "https://code.claude.com/docs/en/agent-teams"
         ],
         "keep": {
-          "zh": "保持子代理独立上下文窗口 + 工具/权限隔离 + 按子代理选模型 + 仅回传摘要的设计，并以内置 Explore/Plan/general-purpose 开箱即用，形成省上下文又可控成本的委派模型。",
+          "zh": "省上下文又可控成本的委派模型：\n- 每个子代理独立上下文窗口，工具/权限隔离、可单独选模型\n- 内置 Explore、Plan、general-purpose 开箱即用\n- 只回传摘要给主代理，主上下文省下来",
           "en": "Keep sub-agents' isolated context windows + tool/permission isolation + per-agent model selection + summary-only return, with built-in Explore/Plan/general-purpose out of the box — a delegation model that saves context and controls cost."
         },
         "fix": {
-          "zh": "标准子代理仅能向主代理回传、不能横向通信，真正的队员互通要靠 agent teams，而后者文档明确标注为实验性、默认关闭，且在会话恢复、任务协调与关闭行为上有已知限制——多代理协作的高级形态尚未达到一等公民的稳定度。",
+          "zh": "高级协作形态还不稳：\n- 标准子代理只能回传主代理，不能横向通信\n- 队员互通要靠 agent teams，而它默认关闭、标注实验性\n- 会话恢复、任务协调、关闭行为都有已知限制",
           "en": "Standard sub-agents only report back to the main agent and can't talk laterally; true peer-to-peer coordination requires agent teams, which the docs explicitly flag as experimental, disabled by default, and carrying known limitations around session resumption, task coordination, and shutdown — so the advanced form of multi-agent collaboration isn't yet a stable first-class citizen."
         }
       }
     },
-    "keyFiles": []
+    "keyFiles": [],
+    "version": {
+      "zh": "v2.1.187",
+      "en": "v2.1.187"
+    }
   },
   {
     "id": "codex",
     "name": "Codex CLI",
-    "vendor": "OpenAI",
+    "vendor": "开源",
     "lang": "Rust",
     "evidenceBasis": "source",
     "repo": "openai/codex",
     "verdict": {
-      "zh": "Codex 以多平台原生沙箱（Seatbelt/Landlock/bwrap + `execpolicy` 规则引擎）和成熟的上下文压缩为最大亮点，但成本控制偏弱——缺乏显式预算/花费上限，只能靠 token 预算提醒与输出截断间接约束。",
+      "zh": "Codex 的最大亮点是多平台原生沙箱（Seatbelt/Landlock/bwrap 加 `execpolicy` 规则引擎）和成熟的上下文压缩。成本控制偏弱，缺显式预算上限，只能靠 token 提醒和输出截断间接约束。",
       "en": "Codex stands out for its multi-platform native sandbox (Seatbelt/Landlock/bwrap plus the `execpolicy` rule engine) and mature context compaction, but cost control is its weak spot—there is no explicit budget/spend cap, only indirect token-budget reminders and output truncation."
     },
     "cells": {
       "memory": {
         "score": 71,
-        "zh": "拥有原生的跨会话长期记忆：`ext/memories` 在 `$CODEX_HOME/memories` 下提供 `list`/`read`/`search`/`add_ad_hoc_note` 文件级工具，并由 `memories/write` 的两阶段（phase1/phase2）整合管线在会话启动时异步固化记忆。",
+        "zh": "自带跨会话的长期记忆（`CODEX_HOME/memories`），但默认未必启用。",
         "en": "Ships a native cross-session long-term memory layer: `ext/memories` exposes file-backed `list`/`read`/`search`/`add_ad_hoc_note` tools under `$CODEX_HOME/memories`, and the two-phase (phase1/phase2) consolidation pipeline in `memories/write` persists memories asynchronously at session startup.",
         "citations": [
           "codex-rs/ext/memories/src/lib.rs:L11-L22",
@@ -161,17 +165,17 @@ export const AGENTS: AgentAnalysis[] = [
           "codex-rs/memories/write/src/start.rs:L22-L35"
         ],
         "keep": {
-          "zh": "记忆是真正的磁盘持久化（CODEX_HOME/memories），含读/搜/写+整合管线和 `MemoryCitation` 引用溯源，远超普通 agent 的薄记忆。",
+          "zh": "真正的磁盘持久化（CODEX_HOME/memories），含读/搜/写工具加 phase1/phase2 整合管线，还有 MemoryCitation 引用溯源，远超普通 agent 的薄记忆。",
           "en": "Memory is genuinely disk-persistent (CODEX_HOME/memories) with read/search/write plus a consolidation pipeline and `MemoryCitation` provenance—well beyond the thin memory of a typical agent."
         },
         "fix": {
-          "zh": "整套记忆受 `Feature::MemoryTool` 特性开关与 `use_memories` 配置门控，且迁移 0035 直接 DROP 了旧记忆表，显示该子系统仍在演进、默认未必启用。",
+          "zh": "整套记忆受 Feature::MemoryTool 开关和 use_memories 配置门控，且迁移 0035 直接 DROP 了旧记忆表——子系统仍在演进、默认未必开。",
           "en": "The whole subsystem is gated behind the `Feature::MemoryTool` flag and `use_memories` config, and migration 0035 outright DROPs the old memory tables, signaling an evolving, not-on-by-default design."
         }
       },
       "context": {
         "score": 88,
-        "zh": "上下文管理非常成熟：`compact.rs` 支持本地/远程（`compact_remote_v2`）与 token 预算三种压缩，区分 mid-turn 与 pre-turn 的初始上下文注入策略，`context_window.rs` 按 `Total`/`BodyAfterPrefix` 作用域计算 `tokens_until_compaction` 并自动触发压缩。",
+        "zh": "上下文管理非常成熟：`compact.rs` 三种压缩 + 自动触发。",
         "en": "Context management is highly mature: `compact.rs` supports local/remote (`compact_remote_v2`) and token-budget compaction, distinguishes mid-turn vs pre-turn initial-context injection strategies, and `context_window.rs` computes `tokens_until_compaction` per `Total`/`BodyAfterPrefix` scope to auto-trigger compaction.",
         "citations": [
           "codex-rs/core/src/compact.rs:L55-L68",
@@ -179,17 +183,17 @@ export const AGENTS: AgentAnalysis[] = [
           "codex-rs/core/src/compact_token_budget.rs:L44-L62"
         ],
         "keep": {
-          "zh": "压缩有完整生命周期（pre/post-compact 钩子）、可配置自动压缩阈值与作用域，并提供本地与服务端摘要两条路径，可观测性强。",
+          "zh": "压缩有完整生命周期、可观测性强：\n- compact.rs 支持本地、远程（compact_remote_v2）和 token 预算三种压缩\n- 区分 mid-turn 和 pre-turn 的初始上下文注入\n- context_window.rs 按作用域算『还差多少 token 触发』并自动压",
           "en": "Compaction has a full lifecycle (pre/post-compact hooks), configurable auto-compact thresholds and scopes, and both local and server-side summarization paths—highly observable."
         },
         "fix": {
-          "zh": "多种压缩实现（local / remote / remote_v2 / token_budget）并存增加了复杂度，行为依赖模型训练假设（如 summary 必须为最后一项），跨实现一致性维护成本高。",
+          "zh": "多种实现（local/remote/remote_v2/token_budget）并存增加复杂度，行为依赖模型训练假设（如 summary 必须最后一项），跨实现一致性维护成本高。",
           "en": "Multiple coexisting compaction implementations (local / remote / remote_v2 / token_budget) add complexity, and behavior depends on model-training assumptions (e.g. the summary must be the last item), raising cross-implementation consistency cost."
         }
       },
       "skill": {
         "score": 84,
-        "zh": "扩展面广：`core-skills` 提供 loader/render/injection/service 的文件级 Skill 体系，`skills` crate 将内置系统 Skill 安装到 `CODEX_HOME/skills/.system`，并与 MCP（`mcp_tool_call.rs` 2200+ 行）、插件安装和动态工具注册表协同。",
+        "zh": "扩展面很宽：`core-skills` 文件级体系 + MCP + 插件 + 动态工具。",
         "en": "Broad extension surface: `core-skills` provides a file-based skill system (loader/render/injection/service), the `skills` crate installs embedded system skills into `CODEX_HOME/skills/.system`, and it integrates with MCP (`mcp_tool_call.rs`, 2200+ lines), plugin installation, and a dynamic tool registry.",
         "citations": [
           "codex-rs/core-skills/src/lib.rs:L1-L36",
@@ -197,17 +201,17 @@ export const AGENTS: AgentAnalysis[] = [
           "codex-rs/core/src/context/available_skills_instructions.rs:L24-L48"
         ],
         "keep": {
-          "zh": "Skill 是磁盘可发现的 Markdown 资产，含元数据预算与渲染注入，叠加 MCP + 插件 + 扩展 API（ToolContributor），扩展机制层次清晰且原生。",
+          "zh": "扩展机制层次清晰且原生：\n- core-skills 提供 loader/render/injection/service 一整套\n- skills crate 把内置系统 Skill 装到 CODEX_HOME/skills/.system\n- 与 MCP（mcp_tool_call.rs 两千多行）、插件安装、动态工具注册表协同",
           "en": "Skills are disk-discoverable Markdown assets with metadata budgeting and rendered injection, layered on MCP + plugins + an extension API (ToolContributor)—a clear, native extension mechanism."
         },
         "fix": {
-          "zh": "Skill 主要是提示词注入式的轻量扩展，缺少独立的版本/依赖与沙箱隔离声明，能力深度依赖底层 shell/工具而非 Skill 自身。",
+          "zh": "Skill 主要是提示词注入式的轻量扩展，缺独立的版本/依赖与沙箱隔离声明，能力深度依赖底层 shell/工具而非 Skill 自身。",
           "en": "Skills are mostly lightweight prompt-injection extensions lacking independent versioning/dependency and sandbox-isolation declarations; their depth relies on the underlying shell/tools rather than the skill itself."
         }
       },
       "cost": {
         "score": 66,
-        "zh": "成本控制以 token 为主：`TokenBudgetConfig`/`RolloutBudgetConfig` 提供剩余 token 提醒阈值与模板，`output-truncation` 按字节/token 预算中段截断工具输出，`get_context_remaining` 工具让模型自查剩余预算。",
+        "zh": "成本控制以 token 为主：`TokenBudgetConfig` 阈值提醒，缺货币层硬上限。",
         "en": "Cost control is token-centric: `TokenBudgetConfig`/`RolloutBudgetConfig` provide remaining-token reminder thresholds and templates, `output-truncation` middle-truncates tool output by byte/token budget, and the `get_context_remaining` tool lets the model self-check remaining budget.",
         "citations": [
           "codex-rs/core/src/config/mod.rs:L1087-L1114",
@@ -215,17 +219,17 @@ export const AGENTS: AgentAnalysis[] = [
           "codex-rs/core/src/tools/handlers/get_context_remaining.rs:L18-L36"
         ],
         "keep": {
-          "zh": "通过自动压缩 + 输出截断 + token 预算提醒形成自动化的 token 节流闭环，并暴露剩余预算工具，避免无声爆窗。",
+          "zh": "形成自动化的 token 节流闭环，避免无声爆窗：\n- TokenBudgetConfig/RolloutBudgetConfig 给剩余 token 的提醒阈值\n- output-truncation 按字节/token 预算从中间截断工具输出\n- get_context_remaining 让模型自查剩余预算",
           "en": "Combines auto-compaction + output truncation + token-budget reminders into an automated token-throttling loop, and exposes a remaining-budget tool to avoid silent context overflow."
         },
         "fix": {
-          "zh": "缺少显式的货币花费核算或硬性预算上限（无 per-model 定价/花费封顶），成本控制分散在多处、偏间接，无法直接限制美元开销。",
+          "zh": "缺显式的货币花费核算或硬性预算上限（没有 per-model 定价/封顶），成本控制分散在多处、偏间接，无法直接限制美元开销。",
           "en": "Lacks explicit monetary spend accounting or a hard budget cap (no per-model pricing/spend ceiling); cost control is scattered and indirect, unable to directly bound dollar spend."
         }
       },
       "sandbox": {
         "score": 94,
-        "zh": "权限/沙箱是绝对强项：`SandboxPolicy` 区分 `read-only`/`workspace-write`/`danger-full-access`/`external-sandbox` 并细化可写根与网络开关，落地为 macOS Seatbelt（SBPL）、Linux Landlock+bwrap、Windows 沙箱，外加 `execpolicy` 命令规则引擎做逐命令裁决。",
+        "zh": "权限和沙箱是绝对强项：`SandboxPolicy` 四档 + 三平台 OS 级隔离。",
         "en": "Permissions/sandbox is the clear strength: `SandboxPolicy` distinguishes `read-only`/`workspace-write`/`danger-full-access`/`external-sandbox` with fine-grained writable roots and network toggles, realized via macOS Seatbelt (SBPL), Linux Landlock+bwrap, and a Windows sandbox, plus the `execpolicy` command rule engine for per-command adjudication.",
         "citations": [
           "codex-rs/protocol/src/protocol.rs:L955-L1006",
@@ -233,17 +237,17 @@ export const AGENTS: AgentAnalysis[] = [
           "codex-rs/core/src/exec_policy.rs:L1-L51"
         ],
         "keep": {
-          "zh": "三平台原生 OS 级隔离 + 声明式策略 + 可写根内对 `.git/hooks` 等提权路径的只读保护 + 网络代理策略，安全模型可配置、可审计、纵深防御。",
+          "zh": "安全模型可配置、可审计、纵深防御：\n- SandboxPolicy 分 read-only/workspace-write/danger-full-access/external-sandbox 四档，细化可写根和网络开关\n- 落到 macOS Seatbelt、Linux Landlock+bwrap、Windows 沙箱\n- execpolicy 命令规则引擎逐条裁决，可写根内对 .git/hooks 等提权路径只读保护",
           "en": "Native OS-level isolation across three platforms + declarative policy + read-only protection of privilege-escalation paths like `.git/hooks` within writable roots + network-proxy policy—a configurable, auditable, defense-in-depth security model."
         },
         "fix": {
-          "zh": "策略表达力强但配置面庞大（exec_policy.rs 超 1000 行、多套 SBPL/规则文件），上手与心智成本较高，且强隔离依赖具体 OS 特性可用性。",
+          "zh": "策略表达力强但配置面庞大（exec_policy.rs 超 1000 行、多套 SBPL/规则文件），上手心智成本高，且强隔离依赖具体 OS 特性可用性。",
           "en": "Highly expressive but with a large config surface (exec_policy.rs exceeds 1000 lines, multiple SBPL/rule files), implying a steep learning/mental cost, and strong isolation depends on the availability of specific OS features."
         }
       },
       "multiagent": {
         "score": 78,
-        "zh": "具备原生子代理体系：`codex_delegate.rs` 可启动可交互的子 Codex 线程并打通 IO 通道，`multi_agents_v2` 暴露 spawn/send_message/wait/interrupt/list/followup 协作工具与加密的 `InterAgentCommunication`，`agent/control.rs` 管理注册表、角色与状态。",
+        "zh": "有原生子代理体系：`codex_delegate.rs`，但 v1/v2 两套仍在快速迭代。",
         "en": "Has a native sub-agent system: `codex_delegate.rs` launches interactive sub-Codex threads with wired IO channels, `multi_agents_v2` exposes spawn/send_message/wait/interrupt/list/followup collaboration tools plus encrypted `InterAgentCommunication`, and `agent/control.rs` manages the registry, roles, and status.",
         "citations": [
           "codex-rs/core/src/codex_delegate.rs:L63-L76",
@@ -251,11 +255,11 @@ export const AGENTS: AgentAnalysis[] = [
           "codex-rs/core/src/tools/handlers/multi_agents_v2/spawn.rs:L39-L68"
         ],
         "keep": {
-          "zh": "支持带角色/模型覆盖的子代理派生、fork 历史模式、批量 `spawn_agents_on_csv` 作业与代理间消息协调，是真正可编排的多代理而非外挂脚本。",
+          "zh": "真正可编排的多代理，而非外挂脚本：\n- codex_delegate.rs 启动可交互的子 Codex 线程并打通 IO\n- multi_agents_v2 暴露 spawn/send_message/wait/interrupt/list/followup 协作工具加加密的 InterAgentCommunication\n- 支持带角色/模型覆盖的派生、fork 历史、批量 spawn_agents_on_csv",
           "en": "Supports role/model-override sub-agent spawning, fork-history modes, batch `spawn_agents_on_csv` jobs, and inter-agent message coordination—genuinely orchestrable multi-agent rather than bolted-on scripting."
         },
         "fix": {
-          "zh": "存在 v1/v2 两套多代理实现并行演进，特性受 `multi_agent_v2` 开关门控，子代理深度与父子审批转交逻辑复杂，仍处于快速迭代期。",
+          "zh": "v1/v2 两套实现并行演进、受 multi_agent_v2 开关门控，子代理深度和父子审批转交逻辑复杂，仍处于快速迭代期。",
           "en": "Two multi-agent implementations (v1/v2) evolve in parallel, the feature is gated behind a `multi_agent_v2` flag, and sub-agent depth plus parent-child approval forwarding logic is complex—still in rapid iteration."
         }
       }
@@ -275,23 +279,27 @@ export const AGENTS: AgentAnalysis[] = [
       "codex-rs/core/src/mcp_tool_call.rs",
       "codex-rs/core/src/tools/registry.rs",
       "codex-rs/utils/output-truncation/src/lib.rs"
-    ]
+    ],
+    "version": {
+      "zh": "v0.137.0",
+      "en": "v0.137.0"
+    }
   },
   {
     "id": "pi",
     "name": "Pi",
-    "vendor": "earendil-works",
+    "vendor": "开源",
     "lang": "TypeScript",
     "evidenceBasis": "source",
     "repo": "earendil-works/pi",
     "verdict": {
-      "zh": "Pi 是一个极简但工程扎实的可自我扩展编码代理框架，强项在于成熟的上下文压缩/分支摘要与符合 Agent Skills 规范的技能/扩展体系；记忆、沙箱与多代理能力存在但偏轻量或以示例扩展形式提供。",
+      "zh": "Pi 是极简但工程扎实、可自我扩展的编码代理框架。强项在成熟的上下文压缩/分支摘要和符合 Agent Skills 规范的扩展体系。记忆、沙箱和多代理能力都有，但偏轻量或以示例扩展形式提供。",
       "en": "Pi is a minimal yet engineering-solid, self-extensible coding-agent harness whose strengths are mature context compaction/branch-summarization and a spec-compliant skills/extension system; memory, sandbox, and multi-agent capabilities exist but are lighter or delivered as example extensions."
     },
     "cells": {
       "memory": {
         "score": 58,
-        "zh": "持久化以 JSONL 会话树为核心：追加式存储、父子分支、可从某叶子分叉出带 parentSession 链的新会话，实现跨会话恢复与续接；项目记忆通过逐级向上发现并加载 AGENTS.md/CLAUDE.md 上下文文件注入系统提示。但没有自动语义记忆、向量库或跨会话知识沉淀，长期记忆本质是会话续存加项目说明文件。",
+        "zh": "持久化核心是一棵 JSONL 会话树，但没有自动语义记忆。",
         "en": "Persistence centers on a JSONL session tree: append-only storage, parent/child branches, and forking a new session from any leaf with a parentSession chain, enabling cross-session resume/continuation; project memory is injected by walking ancestors to load AGENTS.md/CLAUDE.md context files into the system prompt. There is no automatic semantic memory, vector store, or learned cross-session knowledge — long-term memory is essentially session persistence plus project instruction files.",
         "citations": [
           "packages/agent/src/harness/session/jsonl-storage.ts:L161-L259",
@@ -301,17 +309,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/coding-agent/src/core/system-prompt.ts:L153-L166"
         ],
         "keep": {
-          "zh": "保留稳健的 append-only JSONL 会话树与分叉/父会话链，以及自动发现 AGENTS.md/CLAUDE.md 的项目上下文加载。",
+          "zh": "稳健的会话续存加项目上下文加载：\n- append-only JSONL 会话树，支持父子分支、从叶子分叉出带 parentSession 链的新会话\n- 逐级向上自动发现并加载 AGENTS.md/CLAUDE.md 注入系统提示",
           "en": "Keep the robust append-only JSONL session tree with forking/parent-session chaining and the auto-discovery of AGENTS.md/CLAUDE.md project context."
         },
         "fix": {
-          "zh": "增加可选的跨会话长期记忆（如可检索的记忆条目或向量召回），让用户偏好与事实能在不同会话间自动沉淀复用。",
+          "zh": "没有自动语义记忆、向量库或跨会话知识沉淀，长期记忆本质是『会话续存 + 项目说明文件』；可加可检索的记忆条目或向量召回，让偏好和事实自动复用。",
           "en": "Add optional cross-session long-term memory (e.g., retrievable memory entries or vector recall) so user preferences and facts accrue and are reused automatically across sessions."
         }
       },
       "context": {
         "score": 89,
-        "zh": "上下文管理是该框架最成熟的部分：基于 usage.totalTokens 估算上下文、按阈值 shouldCompact 触发，findCutPoint 在不切断工具结果的前提下回溯保留近 keepRecentTokens 的消息，结构化摘要提示（Goal/Progress/Next Steps 等）并支持基于上一摘要的增量更新；额外实现树导航时的分支摘要，避免切换分支丢失上下文，自动压缩带 abort 与扩展钩子。",
+        "zh": "上下文管理是这个框架最成熟的部分，且可被扩展覆盖。",
         "en": "Context management is the harness's most mature area: it estimates context from usage.totalTokens, triggers via a shouldCompact threshold, uses findCutPoint to walk back and keep ~keepRecentTokens of recent messages without severing tool results, drives structured summary prompts (Goal/Progress/Next Steps), and supports iterative updates against a prior summary; it additionally generates branch summaries during tree navigation so switching branches doesn't lose context, with abortable auto-compaction and extension hooks.",
         "citations": [
           "packages/coding-agent/src/core/compaction/compaction.ts:L116-L126",
@@ -321,17 +329,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/coding-agent/src/core/agent-session.ts:L1936-L1999"
         ],
         "keep": {
-          "zh": "保留切点检测、结构化+增量摘要与分支摘要这一套完整、可被扩展覆盖的压缩流水线。",
+          "zh": "一套完整、可扩展覆盖的压缩流水线：\n- 用 usage.totalTokens 估算、按阈值 shouldCompact 触发\n- findCutPoint 不切断工具结果地回溯，保住最近 keepRecentTokens 的消息\n- 结构化摘要（Goal/Progress/Next Steps）支持增量更新，还做树导航的分支摘要避免切分支丢上下文",
           "en": "Keep the complete, extension-overridable compaction pipeline: cut-point detection, structured + iterative summaries, and branch summarization."
         },
         "fix": {
-          "zh": "token 估算用 chars/4 启发式偏粗，可引入真实分词器或按模型校准，并对工具结果做更细的中段裁剪以进一步省 token。",
+          "zh": "token 用 chars/4 估算偏粗，可接真实分词器或按模型校准，并对工具结果做更细的中段裁剪进一步省 token。",
           "en": "The chars/4 token heuristic is coarse; add a real tokenizer or per-model calibration and finer mid-stream pruning of tool results to save more tokens."
         }
       },
       "skill": {
         "score": 90,
-        "zh": "技能/扩展体系强大且标准化：完整实现 Agent Skills 规范（SKILL.md + frontmatter，名称/描述校验、忽略规则、符号链接去重、命名冲突诊断），并以 XML 注入系统提示供模型按描述加载；扩展 API 面广（registerTool/registerCommand/registerFlag/registerShortcut/registerProvider/registerMessageRenderer）并提供 tool_call、tool_result、context、before_provider_request 等钩子，examples/ 下数十个真实扩展，框架可自我扩展。",
+        "zh": "技能和扩展体系强大又标准化，框架能自我扩展。",
         "en": "The skill/extension system is powerful and standardized: a full Agent Skills implementation (SKILL.md + frontmatter, name/description validation, ignore rules, symlink dedup, name-collision diagnostics) injected as XML into the system prompt for model-driven loading; a broad extension API (registerTool/registerCommand/registerFlag/registerShortcut/registerProvider/registerMessageRenderer) plus tool_call, tool_result, context, and before_provider_request hooks, with dozens of real extensions under examples/ — the harness is self-extensible.",
         "citations": [
           "packages/coding-agent/src/core/skills.ts:L92-L127",
@@ -341,17 +349,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/coding-agent/src/core/extensions/types.ts:L1337-L1337"
         ],
         "keep": {
-          "zh": "保留对 Agent Skills 规范的严格实现与宽广、类型安全的扩展/钩子 API 以及丰富示例。",
+          "zh": "严格实现规范加宽广、类型安全的扩展 API：\n- 完整 Agent Skills 规范（SKILL.md + frontmatter，名称/描述校验、忽略规则、符号链接去重、命名冲突诊断），以 XML 注入系统提示\n- 扩展 API 面广（registerTool/Command/Flag/Shortcut/Provider/MessageRenderer），带 tool_call/tool_result/context 等钩子，examples/ 下数十个真实扩展",
           "en": "Keep the strict Agent Skills spec implementation and the broad, type-safe extension/hook API with rich examples."
         },
         "fix": {
-          "zh": "技能默认靠模型读取 SKILL.md 文件触发，可补充更强的运行时校验/沙箱化与版本/依赖管理，降低不可信技能的供应链风险。",
+          "zh": "技能默认靠模型读取 SKILL.md 触发，可补更强的运行时校验/沙箱化与版本/依赖管理，降低不可信技能的供应链风险。",
           "en": "Skills rely on the model reading SKILL.md files; add stronger runtime validation/sandboxing and versioning/dependency management to reduce supply-chain risk from untrusted skills."
         }
       },
       "cost": {
         "score": 72,
-        "zh": "成本控制覆盖多个层面：跨 Anthropic/OpenAI/Bedrock/Mistral 的 prompt 缓存（cacheRetention short/long/none，含 PI_CACHE_RETENTION 环境变量与 24h/1h 长缓存），工具输出按 2000 行/50KB 双限截断，压缩直接降低上下文 token，并对 usage（input/output/cacheRead/cacheWrite/cost）逐条统计。子代理以 --no-session 隔离上下文进一步省钱。缺少全局预算上限或硬性花费熔断。",
+        "zh": "成本控制铺得很广，但缺全局预算上限和硬熔断。",
         "en": "Cost control spans several layers: prompt caching across Anthropic/OpenAI/Bedrock/Mistral (cacheRetention short/long/none, with the PI_CACHE_RETENTION env var and 24h/1h long retention), tool-output truncation at a 2000-line/50KB dual limit, compaction that directly lowers context tokens, and per-message usage accounting (input/output/cacheRead/cacheWrite/cost). Subagents isolate context with --no-session to save further. There is no global budget cap or hard spend cutoff.",
         "citations": [
           "packages/ai/src/api/anthropic-messages.ts:L46-L68",
@@ -361,17 +369,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/coding-agent/examples/extensions/subagent/index.ts:L294-L294"
         ],
         "keep": {
-          "zh": "保留多供应商 prompt 缓存、双限输出截断与细粒度 usage/cost 统计的组合。",
+          "zh": "多层省钱手段组合：\n- 跨 Anthropic/OpenAI/Bedrock/Mistral 的 prompt 缓存（cacheRetention short/long/none，含 24h/1h 长缓存）\n- 工具输出按 2000 行/50KB 双限截断，压缩直接砍上下文 token\n- usage 逐条统计（input/output/cacheRead/cacheWrite/cost），子代理用 --no-session 隔离再省一道",
           "en": "Keep the combination of multi-provider prompt caching, dual-limit output truncation, and fine-grained usage/cost accounting."
         },
         "fix": {
-          "zh": "增加可配置的会话/日级花费预算与硬性熔断，并在接近上限时提示或自动降级模型。",
+          "zh": "缺可配置的会话/日级花费预算和硬性熔断；可在接近上限时提示或自动降级模型。",
           "en": "Add configurable per-session/daily spend budgets with a hard cutoff, plus warnings or automatic model downgrade as limits approach."
         }
       },
       "sandbox": {
         "score": 60,
-        "zh": "核心内置的是项目信任模型：检测 cwd 及其祖先下需信任的项目资源（settings/extensions/skills/prompts/SYSTEM.md 及 .agents/skills），用带文件锁的 trust.json 记忆“信任/不信任/父目录”决策，未信任则不加载项目级扩展/包/技能。真正的 OS 级隔离（macOS sandbox-exec / Linux bubblewrap，网络与读写白名单）以示例扩展形式提供，权限门与受保护路径同样是示例扩展，非默认强制。",
+        "zh": "核心内置的是项目信任模型，真正的 OS 隔离要靠示例扩展。",
         "en": "The built-in core is a project-trust model: it detects trust-requiring project resources under cwd and its ancestors (settings/extensions/skills/prompts/SYSTEM.md and .agents/skills), records trust/untrust/parent decisions in a lock-guarded trust.json, and withholds project-level extensions/packages/skills when untrusted. Actual OS-level isolation (macOS sandbox-exec / Linux bubblewrap with network and read/write allowlists) ships as an example extension, as do the permission gate and protected-paths guards — not enforced by default.",
         "citations": [
           "packages/coding-agent/src/core/trust-manager.ts:L29-L37",
@@ -381,17 +389,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/coding-agent/examples/extensions/permission-gate.ts:L10-L33"
         ],
         "keep": {
-          "zh": "保留带文件锁、按目录层级继承的项目信任门控，以及通过 tool_call 钩子拦截危险命令/写入的能力。",
+          "zh": "带文件锁、按目录层级继承的信任门控：\n- 扫 cwd 及各级父目录下需信任的资源（settings/extensions/skills/prompts/SYSTEM.md、.agents/skills）\n- 用 trust.json 记住『信任/不信任/连父目录』的决策，没信任就不加载项目级扩展\n- 还能用 tool_call 钩子拦截危险命令/写入",
           "en": "Keep the lock-guarded, directory-hierarchy project-trust gating and the ability to intercept dangerous commands/writes via tool_call hooks."
         },
         "fix": {
-          "zh": "将 OS 级沙箱（文件系统/网络白名单）从示例提升为可一键启用的内置默认，减少对用户自行安装扩展的依赖。",
+          "zh": "真正的 OS 级隔离（macOS sandbox-exec、Linux bubblewrap，加网络读写白名单）只以示例扩展形式提供、非默认强制；可把它从示例提升为一键启用的内置默认。",
           "en": "Promote the OS-level sandbox (filesystem/network allowlists) from an example to a built-in, one-flag default rather than relying on users installing an extension."
         }
       },
       "multiagent": {
         "score": 64,
-        "zh": "多代理通过示例扩展 subagent 实现，但实现完整：每个子代理以独立 pi 进程（--mode json -p --no-session）运行，拥有隔离上下文，支持单个、并行（上限 8、并发 4）与链式（{previous} 占位符）三种模式，按并发上限调度，流式回传工具调用、聚合 usage/cost，并将 Ctrl+C abort 传播到子进程；代理定义来自 markdown frontmatter（name/description/tools/model）。属于强能力但位于 examples/ 而非核心原语。",
+        "zh": "多代理通过示例扩展实现，完成度很高但不算核心原语。",
         "en": "Multi-agent is delivered via the example subagent extension, but the implementation is complete: each subagent runs as a separate pi process (--mode json -p --no-session) with isolated context, supporting single, parallel (max 8, concurrency 4), and chain (with a {previous} placeholder) modes, scheduled under a concurrency limit, streaming back tool calls, aggregating usage/cost, and propagating Ctrl+C abort to children; agents are defined via markdown frontmatter (name/description/tools/model). It is a strong capability but lives in examples/ rather than as a core primitive.",
         "citations": [
           "packages/coding-agent/examples/extensions/subagent/index.ts:L1-L13",
@@ -401,11 +409,11 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/coding-agent/examples/extensions/subagent/agents.ts:L26-L75"
         ],
         "keep": {
-          "zh": "保留以独立进程隔离上下文、支持并行/链式编排并聚合用量与传播 abort 的子代理设计。",
+          "zh": "进程级隔离加完整编排：\n- 每个子代理是独立 pi 进程（--mode json -p --no-session），上下文相互隔离\n- 支持单个、并行（上限 8、并发 4）、链式（{previous} 占位符）三种模式，按并发上限调度\n- 流式回传工具调用、汇总 usage/cost，Ctrl+C 的 abort 会传到子进程",
           "en": "Keep the subagent design that isolates context via separate processes, supports parallel/chain orchestration, and aggregates usage while propagating abort."
         },
         "fix": {
-          "zh": "将子代理提升为受支持的核心特性，并增加共享工作区/结构化结果交接与跨代理调度可观测性，减少纯进程级隔离带来的协调开销。",
+          "zh": "子代理住在 examples/ 而非核心；可提升为受支持的核心特性，并加共享工作区、结构化结果交接与跨代理调度可观测性，降低纯进程级隔离的协调开销。",
           "en": "Promote subagents to a supported core feature and add shared-workspace/structured result handoff plus cross-agent scheduling observability to reduce the coordination overhead of pure process-level isolation."
         }
       }
@@ -429,23 +437,27 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/coding-agent/examples/extensions/subagent/agents.ts",
       "packages/coding-agent/examples/extensions/sandbox/index.ts",
       "packages/ai/src/api/anthropic-messages.ts"
-    ]
+    ],
+    "version": {
+      "zh": "v0.74.0",
+      "en": "v0.74.0"
+    }
   },
   {
     "id": "opencode",
     "name": "opencode",
-    "vendor": "SST / 开源",
+    "vendor": "开源",
     "lang": "TypeScript",
     "evidenceBasis": "source",
     "repo": "sst/opencode",
     "verdict": {
-      "zh": "opencode 在可扩展性（技能/自定义子代理/MCP/插件）与显式权限模型上表现突出，配合成熟的预算感知压缩；但缺乏 OS 级沙箱与语义化长期记忆，记忆与成本控制偏向基础设施而非智能层。",
+      "zh": "opencode 的突出点是可扩展性（技能/自定义子代理/MCP/插件）和显式权限模型，配上成熟的预算感知压缩。短板是缺 OS 级沙箱与语义化长期记忆，记忆和成本控制偏基础设施而非智能层。",
       "en": "opencode excels at extensibility (skills/custom subagents/MCP/plugins) and an explicit permission model, paired with a mature budget-aware compaction pipeline; it lacks OS-level sandboxing and semantic long-term memory, so memory and cost control lean on plumbing rather than an intelligence layer."
     },
     "cells": {
       "memory": {
         "score": 50,
-        "zh": "会话/消息/分片以 JSON 持久化到磁盘并带版本迁移，子代理会话可通过 task_id 续接；跨会话记忆主要靠 AGENTS.md/CLAUDE.md/CONTEXT.md 指令文件（全局+项目向上查找）。但没有向量库或自动语义记忆层，记忆完全是用户自管的文件加可恢复的会话存储。",
+        "zh": "持久记忆走简单路线：分片落盘加原生指令文件，没有语义层。",
         "en": "Sessions/messages/parts are persisted as JSON on disk with versioned migrations, and subagent sessions can be resumed via task_id; cross-session memory relies on AGENTS.md/CLAUDE.md/CONTEXT.md instruction files (global + project walk-up). There is no vector store or automatic semantic memory layer — memory is user-curated files plus resumable session storage.",
         "citations": [
           "packages/opencode/src/storage/storage.ts:L53-L59",
@@ -455,17 +467,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/tool/task.ts:L47-L51"
         ],
         "keep": {
-          "zh": "可靠的磁盘会话持久化（含迁移、读写锁）加分层指令文件加载，构成稳健的可恢复上下文。",
+          "zh": "可靠的磁盘持久化加分层指令文件，构成稳健的可恢复上下文：\n- 会话、消息、分片以 JSON 落盘，带版本迁移和读写锁\n- 子代理会话能用 task_id 接着跑\n- 跨会话记忆靠 AGENTS.md/CLAUDE.md/CONTEXT.md（全局加项目逐级向上找）",
           "en": "Reliable disk session persistence (with migrations and read/write locks) plus layered instruction-file loading gives robust resumable context."
         },
         "fix": {
-          "zh": "增加自动语义/长期记忆（如跨会话事实抽取或向量检索），减少对手写 AGENTS.md 的依赖。",
+          "zh": "没有向量库或自动语义记忆层，记忆完全是用户自管的文件；可加跨会话事实抽取或向量检索，减少对手写 AGENTS.md 的依赖。",
           "en": "Add automatic semantic/long-term memory (cross-session fact extraction or vector retrieval) to reduce reliance on hand-written AGENTS.md."
         }
       },
       "context": {
         "score": 86,
-        "zh": "上下文管理非常成熟：overflow.ts 基于模型 context/input 上限与保留输出预算计算可用窗口并自动判定溢出；compaction.ts 实现按轮次的尾部保留（带 token 预算与 splitTurn 拆分）、对旧工具输出的剪枝释放、专用 compaction 代理生成可锚定且可增量更新的摘要、媒体剥离与溢出续接；处理器在溢出时自动触发压缩。",
+        "zh": "上下文管理非常成熟：溢出自动判定加多策略压缩。",
         "en": "Context management is mature: overflow.ts computes the usable window from model context/input limits minus a reserved output budget and auto-detects overflow; compaction.ts implements turn-based tail preservation (with token budgets and splitTurn), pruning of old tool outputs to free space, a dedicated compaction agent that produces an anchored, incrementally-updated summary, plus media stripping and overflow continuation; the processor auto-triggers compaction on overflow.",
         "citations": [
           "packages/opencode/src/session/overflow.ts:L10-L34",
@@ -476,17 +488,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/session/processor.ts:L750-L755"
         ],
         "keep": {
-          "zh": "多策略协同（压缩+剪枝+尾部保留+媒体剥离+锚定摘要）且预算感知，远超单纯依赖模型。",
+          "zh": "多策略协同且预算感知，远超单纯依赖模型：\n- overflow.ts 按模型上限和保留输出预算算可用窗口、自动判溢出\n- compaction.ts 做尾部保留（带 token 预算和 splitTurn 拆分）、旧工具输出剪枝、媒体剥离\n- 专用 compaction 代理生成可锚定、能增量更新的摘要",
           "en": "Multi-strategy, budget-aware design (compaction + pruning + tail preservation + media stripping + anchored summaries) goes well beyond just leaning on the model."
         },
         "fix": {
-          "zh": "token 计数仍用 length/4 估算，压缩边界判断可能偏差；接入精确分词器会更稳。",
+          "zh": "token 仍用 length/4 估算，压缩边界判断可能偏差；接入精确分词器会更稳。",
           "en": "Token counting still uses a length/4 estimate, which can skew compaction thresholds; wiring in an exact tokenizer would be more robust."
         }
       },
       "skill": {
         "score": 90,
-        "zh": "扩展机制堪称标杆：技能从 .claude/.agents/opencode 目录、config 路径乃至远程 URL 发现 SKILL.md，按需加载内容与文件且受权限门控；MCP 客户端支持 stdio/SSE/HTTP、OAuth、分页与工具转换；插件系统支持 npm/文件插件、兼容性校验与钩子；自定义工具可来自插件或配置目录（tool/tools 目录扫描）。",
+        "zh": "扩展机制堪称标杆：技能/MCP/插件/自定义工具四通道齐备。",
         "en": "The extension mechanism is best-in-class: skills are discovered as SKILL.md across .claude/.agents/opencode dirs, config paths, and even remote URLs, loaded on demand and permission-gated; the MCP client supports stdio/SSE/HTTP, OAuth, pagination and tool conversion; the plugin system handles npm/file plugins, compatibility checks and hooks; custom tools can come from plugins or config tool/ dirs.",
         "citations": [
           "packages/opencode/src/skill/index.ts:L173-L233",
@@ -498,17 +510,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/tool/registry.ts:L114-L193"
         ],
         "keep": {
-          "zh": "技能/MCP/插件/自定义工具四条扩展通道齐备，并兼容 Claude/Agents 生态，覆盖面极广。",
+          "zh": "四条扩展通道齐备，并兼容 Claude/Agents 生态，覆盖面极广：\n- 技能从 .claude/.agents/opencode 目录、config 路径乃至远程 URL 发现 SKILL.md，按需加载、受权限门控\n- MCP 客户端支持 stdio/SSE/HTTP、OAuth、分页与工具转换\n- 插件支持 npm/文件插件加兼容性校验与钩子，自定义工具来自插件或配置目录",
           "en": "Four extension channels (skills/MCP/plugins/custom tools) all present and Claude/Agents-ecosystem compatible — extremely broad coverage."
         },
         "fix": {
-          "zh": "插件加载失败会被 Bun 永久缓存（仅文件插件可重试一次），可加入更强的热重载/隔离与版本沙箱。",
+          "zh": "插件加载失败会被 Bun 永久缓存（仅文件插件可重试一次）；可加更强的热重载/隔离与版本沙箱。",
           "en": "Failed plugin imports are permanently cached by Bun (only file plugins retry once); stronger hot-reload/isolation and version sandboxing would help."
         }
       },
       "cost": {
         "score": 60,
-        "zh": "有实在的省钱手段：压缩时对工具输出剪枝、媒体剥离与 TOOL_OUTPUT_MAX_CHARS 截断、按 session 设置 prompt 缓存键与多家 provider 的 cache_control、逐消息累计 cost。但 token 计数仅 length/4 粗估，且未见硬性预算/花费上限强制；成本更多是被动追踪而非主动封顶。",
+        "zh": "有实在的省钱手段，但成本基本是被动记账。",
         "en": "There are real savings levers: pruning tool outputs during compaction, media stripping and TOOL_OUTPUT_MAX_CHARS truncation, per-session prompt cache keys and cross-provider cache_control, and per-message cost accumulation. But token counting is a crude length/4 estimate and there is no hard budget/spend cap enforcement — cost is tracked passively rather than capped.",
         "citations": [
           "packages/core/src/util/token.ts:L3-L5",
@@ -518,17 +530,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/provider/transform.ts:L329-L344"
         ],
         "keep": {
-          "zh": "多 provider 的 prompt 缓存 + 工具输出剪枝/截断显著降低重复上下文与长输出成本。",
+          "zh": "多 provider 缓存加剪枝/截断，显著降低重复上下文与长输出成本：\n- 压缩时对工具输出剪枝、剥离媒体、用 TOOL_OUTPUT_MAX_CHARS 截断\n- 按 session 设 prompt 缓存键并对接多家 provider 的 cache_control\n- 逐条消息累计花费",
           "en": "Cross-provider prompt caching plus tool-output pruning/truncation meaningfully cut repeated-context and long-output costs."
         },
         "fix": {
-          "zh": "用精确分词器替代 length/4，并提供每会话/每天的硬性花费上限与超限熔断。",
+          "zh": "token 用 length/4 粗估，也没有硬性预算/花费上限；可换精确分词器，并提供每会话/每天的硬性上限与超限熔断。",
           "en": "Replace length/4 with an exact tokenizer and add hard per-session/per-day spend caps with a cutoff on overrun."
         }
       },
       "sandbox": {
         "score": 65,
-        "zh": "权限模型显式且细粒度：通配规则按 permission+pattern 评估 allow/ask/deny，支持 always 规则、会话级批准与拒绝级联；arity.ts 解析 bash 命令前缀以做命令级授权；每个代理有默认权限（读 .env 询问、external_directory 白名单、plan 模式禁编辑），外部目录与 shell 访问均需询问。但没有 OS 级进程隔离（无 seatbelt/landlock/bwrap），项目的 sandbox 只是 git worktree，批准后命令以宿主全权运行。",
+        "zh": "权限模型显式又细，但缺真正的 OS 级进程隔离。",
         "en": "The permission model is explicit and granular: wildcard rules evaluate allow/ask/deny by permission+pattern, with always-rules, session-scoped approvals and cascading rejects; arity.ts parses bash command prefixes for command-level authorization; each agent carries default permissions (read .env asks, external_directory whitelist, plan mode denies edits), and external-directory/shell access both prompt. But there is no OS-level process isolation (no seatbelt/landlock/bwrap) — project 'sandboxes' are just git worktrees, and once approved commands run with full host privileges.",
         "citations": [
           "packages/opencode/src/permission/index.ts:L39-L49",
@@ -539,17 +551,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/tool/shell.ts:L263-L291"
         ],
         "keep": {
-          "zh": "权限规则极细：通配+命令前缀 arity+每代理默认+外部目录门控+子代理继承，可控性强。",
+          "zh": "权限规则极细、可控性强：\n- 通配规则按 permission+pattern 判 allow/ask/deny，支持 always 规则、会话级批准、拒绝级联\n- arity.ts 解析 bash 命令前缀做命令级授权\n- 每个代理有默认权限（读 .env 询问、external_directory 白名单、plan 模式禁编辑），碰外部目录和 shell 一律先问",
           "en": "Very fine-grained rules: wildcard + command-prefix arity + per-agent defaults + external-directory gating + subagent inheritance give strong control."
         },
         "fix": {
-          "zh": "缺真正的 OS 沙箱；可叠加 seatbelt/landlock/容器化把已批准命令限制在受控文件系统/网络内。",
+          "zh": "没有 OS 级进程隔离（无 seatbelt/landlock/bwrap），所谓 sandbox 只是个 git worktree，批准后命令以宿主全权运行；可叠加 seatbelt/landlock/容器化。",
           "en": "Missing a true OS sandbox; layering seatbelt/landlock/containerization would confine approved commands to a controlled filesystem/network."
         }
       },
       "multiagent": {
         "score": 83,
-        "zh": "子代理能力强：task 工具按 subagent_type 派生子会话并隔离权限，支持前台/后台模式（后台异步返回并在完成时通知、可注入结果、可取消），通过 task_id 续接同一子代理会话；内置 general/explore 子代理并鼓励并行执行多单元工作；子代理权限从父会话继承 deny/external_directory 并默认收紧 todowrite/task；registry 向主代理罗列可用代理类型。",
+        "zh": "子代理能力强：前台/后台模式加会话续接加权限继承。",
         "en": "Subagent capability is strong: the task tool derives a child session per subagent_type with isolated permissions, supports foreground/background modes (background returns async, notifies on completion, can inject results and be cancelled), and resumes the same subagent session via task_id; built-in general/explore subagents encourage running multiple units of work in parallel; child permissions inherit deny/external_directory from the parent and default-tighten todowrite/task; the registry lists available agent types to the primary agent.",
         "citations": [
           "packages/opencode/src/tool/task.ts:L81-L158",
@@ -559,7 +571,7 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/tool/registry.ts:L252-L265"
         ],
         "keep": {
-          "zh": "前台/后台子代理 + 会话续接 + 权限继承 + 完成通知/结果注入，协调机制完整。",
+          "zh": "协调机制完整：\n- task 工具按 subagent_type 派生子会话并隔离权限，支持前台/后台（后台异步返回、完成通知、结果可注入、可取消）\n- 用 task_id 接回同一子代理会话，内置 general/explore 并鼓励并行\n- 子代理权限从父会话继承 deny/external_directory，默认收紧 todowrite/task",
           "en": "Foreground/background subagents + session resumption + permission inheritance + completion notification/result injection make for complete coordination."
         },
         "fix": {
@@ -588,12 +600,16 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/opencode/src/agent/subagent-permissions.ts",
       "packages/opencode/src/tool/task.ts",
       "packages/opencode/src/storage/storage.ts"
-    ]
+    ],
+    "version": {
+      "zh": "v1.17.4",
+      "en": "v1.17.4"
+    }
   },
   {
     "id": "cursor",
     "name": "Cursor Agent",
-    "vendor": "Anysphere",
+    "vendor": "闭源",
     "lang": "—",
     "evidenceBasis": "docs",
     "repo": null,
@@ -602,13 +618,13 @@ export const AGENTS: AgentAnalysis[] = [
       "en": "Conclusions are grounded in Cursor's official documentation, NOT source (Cursor is a closed-source IDE)."
     },
     "verdict": {
-      "zh": "Cursor Agent 是一款 IDE 原生的闭源编码代理，其最大亮点是上下文检索：向量化代码库索引、语义与代理式搜索（含自研 Instant Grep 与 Explore 子代理）以及 @ 引用，使其在大型代码库中的上下文获取能力处于第一梯队。记忆层由 Rules（Project/User/Team/AGENTS.md）与 Memories（按项目记住对话事实）组成，可用但显式长期记忆较浅。技能扩展依托 MCP、Agent Skills 与 Subagents，较强但以 IDE 为中心。成本为订阅 + 两个用量池（Auto+Composer 与 API）的混合模式，有可见用量表但重度使用下不完全可预测。沙箱是相对弱项：核心代理在本地 IDE 进程内执行，仅对部分 shell 命令“尽可能”沙箱化，依赖 Run Modes 与 permissions.json 白名单（云端 Cloud Agent 才有隔离 VM）。多代理真实存在：Cloud/Background Agents 在隔离 VM 中并行运行，配合 Subagents 并行子任务。",
+      "zh": "Cursor Agent 是 IDE 原生的闭源编码代理，最大亮点是大型代码库的上下文检索（向量索引加语义/代理式搜索）。记忆和技能扩展可用但以 IDE 为中心，成本是订阅加用量池的混合模式。沙箱是相对弱项——本地代理在 IDE 进程内跑，强隔离只在云端 Cloud Agent。",
       "en": "Cursor Agent is an IDE-native, closed-source coding agent whose standout is context retrieval: vector codebase indexing, semantic + agentic search (with a custom Instant Grep engine and an Explore subagent), and @-mention references put its large-codebase context acquisition in the top tier. Its memory layer combines Rules (Project/User/Team/AGENTS.md) with Memories (per-project recall of conversational facts) — usable but the explicit long-term layer is shallow. Skill extensibility rests on MCP, Agent Skills, and Subagents — strong but IDE-centric. Cost is a hybrid of subscription + two usage pools (Auto+Composer and API), with visible meters but not fully predictable under heavy use. Sandbox is a relative weakness: the core agent executes inside the local IDE process, sandboxing only some shell commands 'when possible' and relying on Run Modes and permissions.json allowlists (only cloud Cloud Agents get isolated VMs). Multi-agent is real: Cloud/Background Agents run in parallel in isolated VMs, complemented by parallel Subagents."
     },
     "cells": {
       "memory": {
         "score": 58,
-        "zh": "记忆分三层：Rules（存于 .cursor/rules，分 Project/User/Team，及 AGENTS.md）提供持久的提示级指令；Memories 按项目记住对话中的事实并在后续引用，可在 Settings 中管理；代码库索引充当隐式记忆。文档坦言“大模型在补全之间不保留记忆”，Rules 仅在提示层提供持久上下文，Memories 仍属较轻量的特性，缺少深度、结构化的显式长期记忆存储与召回 API。整体可用但显式长期记忆层偏浅。",
+        "zh": "记忆分三层，能用，但显式长期记忆偏浅。",
         "en": "Memory is layered: Rules (stored in .cursor/rules, split into Project/User/Team, plus AGENTS.md) give persistent prompt-level instructions; Memories remembers facts from conversations per project and references them later, manageable from Settings; the codebase index acts as implicit memory. The docs candidly note 'LLMs don't retain memory between completions,' Rules only inject persistent context at the prompt level, and Memories remains a lightweight feature lacking a deep, structured explicit long-term store with a recall API. Usable overall, but the explicit long-term layer is shallow.",
         "citations": [
           "https://cursor.com/docs/rules",
@@ -616,17 +632,17 @@ export const AGENTS: AgentAnalysis[] = [
           "https://cursor.com/help/customization/indexing"
         ],
         "keep": {
-          "zh": "Rules 四种类型 + 按项目 Memories + 自动代码库索引，三者叠加覆盖了团队规范、个人偏好与会话事实的持久化。",
+          "zh": "三层叠加覆盖了团队规范、个人偏好和会话事实：\n- Rules（.cursor/rules，分 Project/User/Team，含 AGENTS.md）提供持久的提示级指令\n- Memories 按项目记住对话事实、之后引用\n- 代码库索引当隐式记忆",
           "en": "Four Rule types + per-project Memories + automatic codebase indexing together cover persistence of team conventions, personal preferences, and conversational facts."
         },
         "fix": {
-          "zh": "缺乏深度、可查询的显式长期记忆存储（结构化召回、跨项目共享、可审计编辑），Memories 仍偏“首览级”特性。",
+          "zh": "文档自己也承认『大模型在两次补全间不保留记忆』：缺一个有深度、可查询的显式长期记忆（结构化召回、跨项目共享、可审计编辑），Memories 仍偏『首览级』特性。",
           "en": "Lacks a deep, queryable explicit long-term memory store (structured recall, cross-project sharing, auditable edits); Memories remains a 'first-look'-tier feature."
         }
       },
       "context": {
         "score": 88,
-        "zh": "公认强项。Cursor 在打开项目时自动对代码库做向量化索引（约每 5 分钟同步增量），驱动语义检索；Agent 组合多种搜索策略：自研 Instant Grep（在大型代码库上优于 ripgrep）做精确匹配、语义搜索做模糊意图、Explore 子代理做深挖。配合 @ 引用文件/符号/文档，以及 .cursorignore/.cursorindexingignore 精细控制可见范围。文档还描述了团队索引复用以将大型仓库首查时间从数小时降到数秒。大型代码库上下文获取处于第一梯队。",
+        "zh": "公认强项，在大代码库上属于第一梯队。",
         "en": "A recognized strength. On opening a project, Cursor automatically builds a vector index of the codebase (syncing roughly every 5 minutes) to power semantic search; the Agent combines multiple strategies: a custom Instant Grep (outperforming ripgrep on large codebases) for exact matches, semantic search for fuzzy intent, and an Explore subagent for deep dives. Add @-mention references for files/symbols/docs and .cursorignore/.cursorindexingignore for fine-grained scoping. Docs also describe teammate index reuse cutting time-to-first-query on huge repos from hours to seconds. Top-tier large-codebase context acquisition.",
         "citations": [
           "https://cursor.com/docs/agent/tools/search",
@@ -634,17 +650,17 @@ export const AGENTS: AgentAnalysis[] = [
           "https://cursor.com/docs/reference/ignore-file"
         ],
         "keep": {
-          "zh": "向量索引 + 自研 Instant Grep + 语义搜索 + Explore 子代理 + @ 引用，多策略融合，对大型仓库尤其强。",
+          "zh": "多策略融合，对大型仓库尤其强：\n- 打开项目自动做向量索引（约每 5 分钟同步增量）\n- 自研 Instant Grep 精确匹配（大仓比 ripgrep 还快）+ 语义搜索抓模糊意图 + Explore 子代理深挖\n- @ 引用文件/符号/文档，团队还能复用索引把首查从数小时压到数秒",
           "en": "Vector index + custom Instant Grep + semantic search + Explore subagent + @-mentions — a multi-strategy blend that is especially strong on large repos."
         },
         "fix": {
-          "zh": "索引以本地/云索引为中心，检索质量依赖索引新鲜度（约 5 分钟同步），对超大单仓与极快变动场景仍可能有滞后。",
+          "zh": "检索质量依赖索引新鲜度（约 5 分钟同步），对超大单仓和极快变动的场景仍可能有滞后。",
           "en": "Indexing is local/cloud-index-centric and retrieval quality depends on index freshness (~5-min sync), which can lag on very large monorepos or rapidly changing trees."
         }
       },
       "skill": {
         "score": 72,
-        "zh": "扩展以 IDE 为中心但相当完整：完整支持 MCP（stdio 或 HTTP，任意语言编写服务器，mcp.json 配置，Marketplace 一键安装）连接外部工具与数据；Agent Skills 作为开放标准，把领域知识、脚本与模板打包为可移植、可版本化、可执行的技能包；Subagents 可配置自定义提示、工具访问与模型做专项委派；Rules 进一步约束行为。生态较强，但扩展面主要围绕 IDE/CLI 代理而非通用平台。",
+        "zh": "扩展以 IDE 为中心但相当完整，跨宿主可移植性偏弱。",
         "en": "Extensibility is IDE-centric but fairly complete: full MCP support (stdio or HTTP, servers in any language, mcp.json config, one-click Marketplace install) to connect external tools and data; Agent Skills as an open standard packaging domain knowledge, scripts, and templates into portable, version-controlled, actionable skills; Subagents configurable with custom prompts, tool access, and models for specialized delegation; Rules to further shape behavior. A strong ecosystem, though the extension surface centers on the IDE/CLI agent rather than a general platform.",
         "citations": [
           "https://cursor.com/docs/mcp",
@@ -652,23 +668,23 @@ export const AGENTS: AgentAnalysis[] = [
           "https://cursor.com/docs/subagents"
         ],
         "keep": {
-          "zh": "MCP 一键安装 + Marketplace + 开放标准 Agent Skills + 可配置 Subagents，扩展手段多样且与代理深度集成。",
+          "zh": "扩展手段多样且与代理深度集成：\n- 完整 MCP（stdio/HTTP，任意语言写服务器，mcp.json 配置，Marketplace 一键装）\n- Agent Skills 开放标准，把知识/脚本/模板打成可移植技能包\n- Subagents 可配提示/工具/模型，Rules 再约束行为",
           "en": "One-click MCP install + Marketplace + the open Agent Skills standard + configurable Subagents give diverse, deeply integrated extension mechanisms."
         },
         "fix": {
-          "zh": "能力扩展绑定在 Cursor 的 IDE/CLI 代理上，跨宿主可移植性弱于纯 CLI/库式工具框架。",
+          "zh": "能力扩展绑在 Cursor 的 IDE/CLI 代理上，跨宿主可移植性弱于纯 CLI 或库式工具框架。",
           "en": "Capability extension is bound to Cursor's IDE/CLI agent, so cross-host portability is weaker than pure CLI/library-style tool frameworks."
         }
       },
       "cost": {
         "score": 55,
-        "zh": "成本被抽象为订阅 + 用量池的混合模型。平台层按席位：Hobby 免费，Pro/Pro Plus/Ultra 为个人付费档，Teams 按人计费。AI 用量层分两个池并随月度账期重置：Auto+Composer 池（选用 Auto 或 Composer 时含更多额度，面向日常代理式编码、成本更低）与 API 池（按模型 API 价计费，个人档每月至少含 \\$20，可按需加购）。两个池均有可见用量表。模型覆盖 OpenAI/Anthropic/Google 等全部前沿模型。透明度尚可，但重度使用下 API 池消耗不完全可预测。",
+        "zh": "成本是『订阅 + 用量池』混合，重度使用下不太好预测。",
         "en": "Cost is abstracted into a subscription + usage-pool hybrid. Platform layer is seat-based: Hobby free, Pro/Pro Plus/Ultra as individual paid tiers, Teams per-user. The AI usage layer splits into two pools that reset each monthly cycle: an Auto+Composer pool (more included usage when Auto or Composer is selected, aimed at cheaper everyday agentic coding) and an API pool (charged at the model's API price, with individual plans including at least \\$20/month and optional pay-as-you-go). Both pools are shown on visible meters. Models span all frontier OpenAI/Anthropic/Google options. Reasonably transparent, but API-pool burn is not fully predictable under heavy use.",
         "citations": [
           "https://cursor.com/docs/models-and-pricing"
         ],
         "keep": {
-          "zh": "两个用量池 + 可见用量表 + 全前沿模型可选 + Auto/Composer 低成本路径，给了用户在智能、速度与成本间的调节空间。",
+          "zh": "给了在智能、速度、成本间的调节空间：\n- 平台层按席位（Hobby 免费，Pro/Pro Plus/Ultra，Teams 按人头）\n- 用量分两池、月度重置：Auto+Composer 池（更便宜）和 API 池（按模型 API 价，个人档每月至少含 $20）\n- 两池都有用量表，模型覆盖全部前沿厂商",
           "en": "Two usage pools + visible meters + all frontier models + a low-cost Auto/Composer path give users a dial between intelligence, speed, and cost."
         },
         "fix": {
@@ -678,24 +694,24 @@ export const AGENTS: AgentAnalysis[] = [
       },
       "sandbox": {
         "score": 50,
-        "zh": "相对弱项。核心代理在本地 IDE 进程内执行工具调用，隔离弱于容器/VM 优先的框架。安全主要靠 Run Modes（Auto-review、Allowlist、Run Everything）与 permissions.json：后者配置 MCP 工具与终端命令白名单及 autoRun，定义白名单时会覆盖 IDE 内设置。Auto-review 会对已知安全调用放行、对 shell 命令“尽可能”沙箱化、其余交分类器审查——但沙箱是“尽可能/可选”，并非强隔离边界。真正的隔离 VM 仅出现在云端 Cloud Agent，本地默认代理不具备。",
+        "zh": "相对弱项：本地代理在 IDE 进程内跑，强隔离只在云端。",
         "en": "A relative weakness. The core agent executes tool calls inside the local IDE process, with weaker isolation than container/VM-first frameworks. Safety rests mainly on Run Modes (Auto-review, Allowlist, Run Everything) and permissions.json: the latter configures MCP-tool and terminal-command allowlists plus autoRun, overriding the in-app settings when defined. Auto-review lets known-safe calls run, sandboxes shell commands 'when possible,' and routes the rest to a classifier — but the sandbox is 'when possible/optional,' not a hard isolation boundary. True isolated VMs appear only in cloud Cloud Agents, not the default local agent.",
         "citations": [
           "https://cursor.com/docs/reference/permissions",
           "https://cursor.com/docs/agent/security/run-modes"
         ],
         "keep": {
-          "zh": "Run Modes 三档 + permissions.json 细粒度白名单（MCP/终端/autoRun）+ Auto-review 分类器，给了可调的审批与执行护栏。",
+          "zh": "给了可调的审批与执行护栏：\n- Run Modes 三档（Auto-review、Allowlist、Run Everything）\n- permissions.json 细粒度白名单（MCP 工具、终端命令、autoRun），定义后盖过 IDE 内设置\n- Auto-review 对已知安全调用放行、其余交分类器审查",
           "en": "Three Run Modes + fine-grained permissions.json allowlists (MCP/terminal/autoRun) + an Auto-review classifier provide tunable approval-and-execution guardrails."
         },
         "fix": {
-          "zh": "本地代理在 IDE 进程内运行，shell 沙箱仅“尽可能”，缺乏默认的强隔离边界；强隔离仅限云端 Cloud Agent。",
+          "zh": "隔离强度不足：\n- 核心代理在本地 IDE 进程内执行，shell 沙箱只是『尽量/可选』，不是硬边界\n- 真正的隔离 VM 只在云端 Cloud Agent，本地默认代理没有",
           "en": "The local agent runs in-IDE with shell sandboxing only 'when possible' and no default hard-isolation boundary; strong isolation is limited to cloud Cloud Agents."
         }
       },
       "multiagent": {
         "score": 80,
-        "zh": "多代理是真实且成熟的能力。Background/Cloud Agents 是长时运行的远程代理，各自跑在带完整开发环境（克隆仓库、装好依赖、密钥、网络）的隔离 VM 中，可异步从头到尾完成任务并自动开 PR，且可任意数量并行运行。本地侧的 Subagents 拥有独立上下文窗口、可同时启动多个并行执行、可配置专用提示/工具/模型，并将结果回传父代理。文档明确支持编辑器、CLU 与 Cloud Agents 三处使用。并行与隔离的多代理工作流由文档充分背书。",
+        "zh": "多代理是真能力也较成熟，但编排主要由 Cursor 托管。",
         "en": "Multi-agent is a real, mature capability. Background/Cloud Agents are long-running remote agents, each on its own isolated VM with a full dev environment (cloned repo, installed deps, secrets, network), completing tasks asynchronously end-to-end and auto-opening PRs, and you can run as many in parallel as you want. On the local side, Subagents have their own context windows, can be launched simultaneously for parallel execution, are configurable with custom prompts/tools/models, and return results to the parent agent. Docs confirm use across the editor, CLI, and Cloud Agents. Parallel, isolated multi-agent workflows are well-documented.",
         "citations": [
           "https://cursor.com/docs/cloud-agent",
@@ -703,16 +719,20 @@ export const AGENTS: AgentAnalysis[] = [
           "https://cursor.com/docs/subagents"
         ],
         "keep": {
-          "zh": "Cloud/Background Agents 在隔离 VM 中任意并行 + Subagents 独立上下文并行委派，覆盖云端长任务与本地子任务两种并行模式。",
+          "zh": "覆盖云端长任务和本地子任务两种并行：\n- Background/Cloud Agents 跑在配好完整环境的隔离 VM 里，能异步从头做完、自动开 PR，可任意并行\n- 本地 Subagents 有独立上下文窗口，可同时开多个并行、单独配提示/工具/模型",
           "en": "Cloud/Background Agents run unbounded in parallel on isolated VMs + Subagents delegate in parallel with isolated contexts, covering both cloud long-tasks and local subtask parallelism."
         },
         "fix": {
-          "zh": "并行编排主要由 Cursor 托管（云端 VM/IDE 内），缺乏面向复杂多代理拓扑的开放、自定义编排原语。",
+          "zh": "并行编排主要由 Cursor 托管（云端 VM 或 IDE 内），缺面向复杂多代理拓扑的开放、自定义编排原语。",
           "en": "Parallel orchestration is largely Cursor-managed (cloud VMs/in-IDE), lacking open, customizable orchestration primitives for complex multi-agent topologies."
         }
       }
     },
-    "keyFiles": []
+    "keyFiles": [],
+    "version": {
+      "zh": "v3.9",
+      "en": "v3.9"
+    }
   },
   {
     "id": "aider",
@@ -722,13 +742,13 @@ export const AGENTS: AgentAnalysis[] = [
     "evidenceBasis": "source",
     "repo": "Aider-AI/aider",
     "verdict": {
-      "zh": "Aider 是一个 git 原生、以 repo-map 为核心的结对编程工具，画像极度尖锐——上下文管理与 token 成本控制堪称典范，但刻意不做技能/插件、子代理、沙箱与跨会话记忆。",
+      "zh": "Aider 是 git 原生、以 repo-map 为核心的结对编程工具，画像极度尖锐。上下文管理和 token 成本控制堪称典范，但刻意不做技能/插件、子代理、沙箱和跨会话记忆。",
       "en": "Aider is a git-native, repo-map-centric pair-programming tool with a deliberately spiky profile: world-class context management and token-cost thrift, but no skill/plugin system, no sub-agents, no real sandbox, and essentially no cross-session memory."
     },
     "cells": {
       "memory": {
         "score": 22,
-        "zh": "几乎没有长期记忆。聊天历史只是被追加写入 .aider.chat.history.md 的 markdown，且仅在显式传入 --restore-chat-history（默认 False）时才会重建会话；/save 与 /load 也只重建文件清单而非语义记忆。唯一持久状态是 git 提交历史，没有知识库、向量库或项目记忆。",
+        "zh": "基本没有长期记忆，能留下来的只有 git 提交历史。",
         "en": "Almost no long-term memory. Chat history is just markdown appended to .aider.chat.history.md and is only replayed when the --restore-chat-history flag (default False) is set; /save and /load merely reconstruct the file list, not semantic memory. The only durable state is git commit history — there is no knowledge base, embeddings, or project memory.",
         "citations": [
           "aider/io.py:L1128-L1136",
@@ -737,17 +757,17 @@ export const AGENTS: AgentAnalysis[] = [
           "aider/commands.py:L1497-L1522"
         ],
         "keep": {
-          "zh": "用 git 历史作为可审计的事实来源，配合 markdown 聊天日志，简单、透明、可 grep。",
+          "zh": "用 git 历史当事实来源，配合 markdown 聊天日志，简单、透明、可 grep。",
           "en": "Leans on git history as an auditable source of truth plus a plain markdown chat log — simple, transparent, greppable."
         },
         "fix": {
-          "zh": "增加跨会话的项目级记忆（如持久化的偏好/约定/已学事实），并默认开启历史恢复而非依赖一个默认关闭的开关。",
+          "zh": "聊天历史只是不断追加的 .aider.chat.history.md，而且：\n- 只有显式加 --restore-chat-history（默认关）才会拿它重建会话\n- /save 和 /load 只存取文件清单，不是语义记忆\n- 没有知识库、向量库或项目记忆，跨会话偏好无法自动沉淀",
           "en": "Add cross-session project memory (persisted preferences/conventions/learned facts) and enable history restore by default instead of relying on a flag that ships off."
         }
       },
       "context": {
         "score": 90,
-        "zh": "全场标杆。repo-map 用 tree-sitter 抽取符号、构建 def/ref 图并跑 PageRank 个性化排序（聊天内文件 ×50、被提及标识符 ×10），再用二分搜索把地图精确塞进 token 预算；叠加递归式聊天历史摘要与 ChatChunks 结构化拼装，使大仓库也能用极少 token 获得全局视野。",
+        "zh": "全场标杆：用 repo-map 把大仓库压成极少 token 的全局视野。",
         "en": "Best-in-class. The repo-map extracts symbols via tree-sitter, builds a def/ref graph and runs personalized PageRank (chat files ×50, mentioned idents ×10), then binary-searches the map to fit an exact token budget; layered with recursive chat-history summarization and structured ChatChunks assembly, it gives a whole-repo view for very few tokens.",
         "citations": [
           "aider/repomap.py:L365-L574",
@@ -757,17 +777,17 @@ export const AGENTS: AgentAnalysis[] = [
           "aider/coders/chat_chunks.py:L16-L64"
         ],
         "keep": {
-          "zh": "PageRank 图排序 + 二分预算拟合是真正可量化、可复现的上下文选择机制，且对模型上下文窗口自适应。",
+          "zh": "PageRank 图排序 + 二分预算拟合，是真正可量化、可复现的上下文选择：\n- tree-sitter 抽符号、建定义/引用图\n- 聊天里出现的文件权重 ×50、被提到的标识符 ×10\n- 二分查找把地图精确塞进 token 预算，还随模型上下文自适应",
           "en": "PageRank graph ranking plus binary-search budget fitting is a genuinely measurable, reproducible context-selection mechanism that adapts to the model's context window."
         },
         "fix": {
-          "zh": "排序仍偏静态结构信号，可引入语义相似度/最近编辑热度，并为超大仓库提供增量重排以降低首扫开销。",
+          "zh": "排序仍偏静态结构信号，可引入语义相似度或最近编辑热度，并为超大仓库做增量重排以降低首扫开销。",
           "en": "Ranking still relies on static structural signals; blend in semantic similarity / recent-edit recency, and add incremental re-ranking for very large repos to cut first-scan cost."
         }
       },
       "skill": {
         "score": 16,
-        "zh": "刻意最小化，没有 MCP、没有插件系统、没有技能加载器（全仓库 grep 无 mcp/plugin/subagent 命中）。扩展面仅限硬编码的 cmd_* 斜杠命令与固定的一组 edit-format coder；functions 仅服务于函数调用 coder，并非面向用户的可扩展工具，register_models 也只加载模型元数据而非工具。",
+        "zh": "扩展能力被刻意做到最小：没有 MCP、没有插件、没有技能加载器。",
         "en": "Deliberately minimal: no MCP, no plugin system, no skill loader (a whole-repo grep for mcp/plugin/subagent returns nothing). The extension surface is just hardcoded cmd_* slash commands plus a fixed set of edit-format coders; `functions` only serves the function-calling coders and is not a user-extensible tool system, and register_models loads model metadata, not tools.",
         "citations": [
           "aider/commands.py:L445-L466",
@@ -776,17 +796,17 @@ export const AGENTS: AgentAnalysis[] = [
           "aider/models.py:L1085-L1112"
         ],
         "keep": {
-          "zh": "保持核心精简、零外部工具协议，降低攻击面与维护负担，斜杠命令集已覆盖日常工作流。",
+          "zh": "核心精简、零外部工具协议，攻击面和维护负担都低，斜杠命令集已覆盖日常工作流。",
           "en": "Keeps the core lean with zero external tool protocols, lowering attack surface and maintenance burden; the built-in slash-command set already covers everyday workflows."
         },
         "fix": {
-          "zh": "若要支持第三方能力，可引入 MCP 客户端或一个轻量插件/工具注册接口，让用户在不改源码的情况下扩展。",
+          "zh": "能扩展的只有写死的 cmd_* 斜杠命令和固定的 edit-format coder（全仓 grep 不到 mcp/plugin/subagent）。若要支持第三方能力，可引入 MCP 客户端或一个轻量插件/工具注册接口。",
           "en": "To support third-party capabilities, add an MCP client or a lightweight plugin/tool-registration interface so users can extend without forking the source."
         }
       },
       "cost": {
         "score": 85,
-        "zh": "token 节流非常强。repo-map 默认仅 1024 token（上限约 4096，按模型上下文自适应）把上下文压到最小；配合 prompt 缓存（cache_control 头 + 后台缓存预热）、用 weak_model 做摘要省钱，以及逐条/逐会话的精细 token 与成本核算（含各家缓存读写差异化定价）。",
+        "zh": "省 token 的功夫很到家，成本控制是一等公民。",
         "en": "Very strong token thrift. The repo-map defaults to just 1024 tokens (capped ~4096, adaptive to the model context) to keep context minimal; combined with prompt caching (cache_control headers + background cache warming), a cheaper weak_model for summarization, and detailed per-message/per-session token and cost accounting that models each provider's cache read/write pricing.",
         "citations": [
           "aider/models.py:L782-L789",
@@ -795,17 +815,17 @@ export const AGENTS: AgentAnalysis[] = [
           "aider/coders/chat_chunks.py:L28-L55"
         ],
         "keep": {
-          "zh": "把成本控制做成一等公民：自适应地图预算 + 缓存预热 + 逐消息成本可视化，让用户对花费心中有数。",
+          "zh": "把成本做成核心能力，让用户对花费心中有数：\n- repo-map 默认仅 1024 token（上限约 4096），还随模型上下文自适应\n- prompt 缓存带 cache_control 头和后台预热\n- 用更便宜的 weak_model 跑摘要，逐条/逐会话精细计费",
           "en": "Treats cost as a first-class concern: adaptive map budget + cache warming + per-message cost visibility give users clear spend awareness."
         },
         "fix": {
-          "zh": "成本核算依赖 litellm 的费率表，可在缺表/自托管模型时给出更稳健回退，并提供会话预算上限与自动降级策略。",
+          "zh": "成本核算依赖 litellm 的费率表，缺表或自托管模型时回退不稳；可补会话预算上限与自动降级策略。",
           "en": "Cost accounting depends on litellm's price tables; provide a more robust fallback for missing tables / self-hosted models, plus session budget caps and an auto-downgrade strategy."
         }
       },
       "sandbox": {
         "score": 30,
-        "zh": "无真正隔离。Aider 直接编辑本地工作区文件，靠确认提示（编辑未加入文件、新建文件、运行 shell 都需 confirm，shell 还要求显式 yes）+ git 自动提交/`/undo` 作为安全网，并尊重 gitignore。但没有容器、文件系统沙箱或网络限制，shell 命令直接在仓库 cwd 执行，安全性本质上依赖 git 可回滚而非隔离。",
+        "zh": "谈不上真正的隔离，安全感来自『git 能回滚』而非『隔离』。",
         "en": "No true isolation. Aider edits local workspace files directly, relying on confirmation prompts (editing un-added files, creating files, and running shell all require confirm; shell additionally requires an explicit yes) plus git auto-commit / `/undo` as the safety net, and it honors gitignore. But there is no container, filesystem jail, or network restriction — shell commands run straight in the repo cwd, so safety rests on git revertability rather than isolation.",
         "citations": [
           "aider/coders/base_coder.py:L2191-L2240",
@@ -814,17 +834,17 @@ export const AGENTS: AgentAnalysis[] = [
           "aider/coders/base_coder.py:L2202-L2204"
         ],
         "keep": {
-          "zh": "git 作为安全网很务实：每次编辑前可脏提交、编辑后自动提交，配合 /undo 让任何改动可回滚、可审计。",
+          "zh": "git 当安全网很务实：编辑前可脏提交、编辑后自动提交，配合 /undo 让任何改动可回滚、可审计，也尊重 gitignore。",
           "en": "Git-as-safety-net is pragmatic: dirty-commit before edits, auto-commit after, and /undo make every change revertable and auditable."
         },
         "fix": {
-          "zh": "引入可选的执行沙箱（容器/受限子进程）、命令白名单与网络隔离，减少对‘用户每次都正确确认’的依赖。",
+          "zh": "没有容器、文件系统沙箱或网络限制：\n- shell 命令直接在仓库目录里跑\n- 改文件、新建文件、跑 shell 都靠确认提示兜底\n- 可引入可选的执行沙箱、命令白名单与网络隔离，少依赖『用户每次都确认对』",
           "en": "Add an optional execution sandbox (container/restricted subprocess), command allowlists, and network isolation to reduce reliance on the user confirming correctly every time."
         }
       },
       "multiagent": {
         "score": 20,
-        "zh": "本质单进程结对编辑，无子代理派生、无并行任务。最接近的是 architect→editor 的顺序交接：architect coder 在同进程内同步创建一个 editor coder 来落地修改，仍是单线程串行；摘要器虽跑在后台线程，但只是异步摘要而非独立代理。没有任务分解、并发 worker 或代理编排。",
+        "zh": "本质是单进程结对编程，不派生子代理、也没有并行任务。",
         "en": "Fundamentally single-process pair editing with no sub-agent spawning and no parallel tasks. The closest analog is the sequential architect→editor handoff, where the architect coder synchronously creates an editor coder in-process to apply changes — still single-threaded and serial; the summarizer runs on a background thread but that is async summarization, not an independent agent. There is no task decomposition, concurrent workers, or agent orchestration.",
         "citations": [
           "aider/coders/architect_coder.py:L11-L48",
@@ -832,11 +852,11 @@ export const AGENTS: AgentAnalysis[] = [
           "aider/coders/base_coder.py:L1002-L1034"
         ],
         "keep": {
-          "zh": "architect/editor 的角色拆分是个务实的‘规划-执行’轻量编排，单进程内即可获得分工收益。",
+          "zh": "architect/editor 的角色拆分是务实的『规划-执行』轻量编排，单进程内就能分工。",
           "en": "The architect/editor role split is a pragmatic, lightweight 'plan-then-execute' orchestration that gains division-of-labor benefits within a single process."
         },
         "fix": {
-          "zh": "若要支持并行，可引入真正的子代理派生与任务队列，让多个 editor 在隔离工作树上并发处理独立文件集。",
+          "zh": "最接近多代理的只是 architect→editor 顺序交接，仍是单线程串行；摘要器虽在后台线程但只做异步摘要。若要并行，需引入真正的子代理派生与任务队列，让多个 editor 在隔离工作树上并发。",
           "en": "To support parallelism, add real sub-agent spawning and a task queue so multiple editors can work concurrently on independent file sets in isolated worktrees."
         }
       }
@@ -853,7 +873,11 @@ export const AGENTS: AgentAnalysis[] = [
       "aider/models.py",
       "aider/io.py",
       "aider/args.py"
-    ]
+    ],
+    "version": {
+      "zh": "v0.86.0",
+      "en": "v0.86.0"
+    }
   },
   {
     "id": "cline",
@@ -863,13 +887,13 @@ export const AGENTS: AgentAnalysis[] = [
     "evidenceBasis": "source",
     "repo": "cline/cline",
     "verdict": {
-      "zh": "Cline 已从单体扩展重构为 SDK core + VS Code 应用双层架构，工程深度明显。其上下文压缩（basic 确定性裁剪 + agentic LLM 摘要双策略）、真实的多智能体团队系统（spawn_agent 子代理 + AgentTeam 并行/串行/流水线 + 邮箱/任务/产出物团队工具）、以及细粒度自动批准沙箱是三大亮点。记忆依赖 .clinerules/skills/workflows 指令文件与文件上下文追踪，成本侧以 token/缓存用量聚合为主、缺少显式美元成本计算。整体是一个能力均衡且多智能体维度突出的开源 harness。",
+      "zh": "Cline 已重构为 SDK core + VS Code 应用双层架构，工程深度明显。三大亮点是双策略上下文压缩、货真价实的多智能体团队系统、以及细粒度的自动批准沙箱。记忆靠指令文件加文件追踪，成本侧偏用量聚合、缺显式美元核算。",
       "en": "Cline has been refactored from a monolithic extension into a two-layer SDK-core + VS Code-app architecture with real engineering depth. Its standout strengths are context compaction (dual basic deterministic-trim + agentic LLM-summary strategies), a genuine multi-agent team system (spawn_agent sub-agents + AgentTeam parallel/sequential/pipeline + mailbox/task/outcome team tools), and a fine-grained auto-approval sandbox. Memory rests on .clinerules/skills/workflows instruction files plus file-context tracking, and cost is handled mainly via token/cache usage aggregation rather than explicit dollar costing. Overall a well-balanced open-source harness that punches notably above average on multi-agent."
     },
     "cells": {
       "memory": {
         "score": 63,
-        "zh": "记忆以指令文件 + 持久追踪为主：cline-rules.ts 同步全局与本地 .clinerules 的开关（含 workflows/hooks/skills 子目录），skills.ts 从 SKILL.md frontmatter 发现技能并按 remote>global>project 优先级解析，workflows.ts 管理工作流开关，FileContextTracker 用 chokidar 监听文件、区分 Cline 编辑与用户编辑并把操作写入任务元数据以防上下文陈旧。属于规则/技能文件型记忆加文件级追踪，而非学习型长期记忆库。",
+        "zh": "记忆靠指令文件加文件级追踪，不是会自学习的长期记忆库。",
         "en": "Memory is instruction-file + persistent-tracking based: cline-rules.ts syncs global and local .clinerules toggles (with workflows/hooks/skills subdirs), skills.ts discovers skills from SKILL.md frontmatter with remote>global>project precedence, workflows.ts manages workflow toggles, and FileContextTracker uses chokidar to watch files, distinguish Cline edits from user edits, and persist operations to task metadata to prevent stale context. This is rules/skill-file memory plus file-level tracking rather than a learned long-term memory store.",
         "citations": [
           "apps/vscode/src/core/context/instructions/user-instructions/cline-rules.ts:L7-L34",
@@ -878,17 +902,17 @@ export const AGENTS: AgentAnalysis[] = [
           "apps/vscode/src/core/context/instructions/user-instructions/workflows.ts:L10-L32"
         ],
         "keep": {
-          "zh": "全局/本地双层规则与工作流开关同步，加上 chokidar 文件追踪区分谁改了文件，能有效防止 diff 编辑时的上下文陈旧。",
+          "zh": "双层规则同步加文件追踪，有效防住编辑时的上下文陈旧：\n- cline-rules.ts 同步全局/本地 .clinerules 及 workflows/hooks/skills\n- skills.ts 按 remote>global>project 解析 SKILL.md\n- FileContextTracker 用 chokidar 分清是 Cline 改的还是用户改的",
           "en": "Two-tier global/local rules and workflow toggle sync, plus chokidar file tracking that distinguishes who edited a file, effectively prevents stale context during diff edits."
         },
         "fix": {
-          "zh": "缺少跨会话的语义/向量记忆与自动事实沉淀，记忆仍需用户手写 .clinerules/SKILL.md，可引入自动化的长期记忆层。",
+          "zh": "缺跨会话的语义/向量记忆和自动事实沉淀，记忆仍要用户手写 .clinerules/SKILL.md；可加一个自动化长期记忆层。",
           "en": "Lacks cross-session semantic/vector memory and automatic fact distillation; memory still relies on user-authored .clinerules/SKILL.md, so an automated long-term memory layer would help."
         }
       },
       "context": {
         "score": 86,
-        "zh": "上下文工程是 Cline 的强项。compaction.ts 构建 prepareTurn 管线，按 reserveTokens/thresholdRatio 解析触发阈值，支持 auto 与 manual（带目标比例）两种模式并发压缩遥测。两套内置策略：basic-compaction 做确定性裁剪，按角色分批移除并原子化保留 tool_use/tool_result 配对、保护首条用户消息与最新轮次；agentic-compaction 用 LLM 生成续写摘要、折叠上一份摘要、抽取并保留文件操作段。还可由用户自定义 compact 回调覆盖。",
+        "zh": "上下文工程是 Cline 的强项：确定性 + LLM 摘要双策略。",
         "en": "Context engineering is a Cline strength. compaction.ts builds the prepareTurn pipeline, resolves trigger thresholds from reserveTokens/thresholdRatio, supports both auto and manual (with target ratio) modes, and emits compaction telemetry. Two built-in strategies: basic-compaction does deterministic trimming, removing by role in waves while atomically preserving tool_use/tool_result pairs and protecting the first user message and latest turn; agentic-compaction uses an LLM to produce a continuation summary, folds in any previous summary, and extracts/preserves a file-operations section. A user-supplied compact callback can override either.",
         "citations": [
           "sdk/packages/core/src/extensions/context/compaction.ts:L226-L429",
@@ -896,17 +920,17 @@ export const AGENTS: AgentAnalysis[] = [
           "sdk/packages/core/src/extensions/context/basic-compaction.ts:L327-L419"
         ],
         "keep": {
-          "zh": "确定性 + LLM 摘要双策略、auto/manual 模式、tool 配对原子移除与文件操作保留，是成熟的上下文压缩设计。",
+          "zh": "成熟的压缩设计，auto/manual 都支持：\n- basic-compaction 确定性裁剪，成对保住 tool_use/tool_result，护住首条用户消息和最近一轮\n- agentic-compaction 用 LLM 生成续写摘要、折叠旧摘要、保留文件操作段\n- 还能用自定义 compact 回调覆盖",
           "en": "Dual deterministic + LLM-summary strategies, auto/manual modes, atomic tool-pair removal, and file-op preservation make for a mature compaction design."
         },
         "fix": {
-          "zh": "token 估算依赖字符数启发式（estimateTokens），跨模型精度有限；可接入真实分词器或模型自带的用量回写来提升触发阈值准确度。",
+          "zh": "token 靠字符数启发式（estimateTokens）估算，跨模型精度有限；可接真实分词器或用模型回写的用量来校准触发阈值。",
           "en": "Token estimation relies on a char-count heuristic (estimateTokens) with limited cross-model accuracy; wiring in a real tokenizer or model-reported usage would sharpen trigger thresholds."
         }
       },
       "skill": {
         "score": 80,
-        "zh": "技能/工具体系丰富。skills.ts 实现 SKILL.md 的发现、frontmatter 校验、disabled 标志读写（与 SDK 的 skills 工具同源）、remote(企业)>global(用户)>project(工作区) 的覆盖解析与远程技能内容加载。工具层在 sdk 的 extensions/tools 下有 bash/editor/file-read/apply-patch/web-fetch/search 等执行器及 presets/路由；MCP 子系统完整：InMemoryMcpManager（带工具缓存 TTL）、oauth、config-loader、policies、client，可注册外部 MCP server 扩充工具。",
+        "zh": "技能和工具体系丰富：SKILL.md 模型 + 三级优先级 + 完整 MCP。",
         "en": "Rich skill/tool surface. skills.ts implements SKILL.md discovery, frontmatter validation, disabled-flag read/write (shared semantics with the SDK skills tool), remote(enterprise)>global(user)>project(workspace) override resolution, and remote-skill content loading. The tool layer under sdk extensions/tools ships bash/editor/file-read/apply-patch/web-fetch/search executors plus presets/routing, and the MCP subsystem is complete: InMemoryMcpManager (with tool-cache TTL), oauth, config-loader, policies, and client to register external MCP servers and extend the toolset.",
         "citations": [
           "apps/vscode/src/core/context/instructions/user-instructions/skills.ts:L28-L82",
@@ -914,17 +938,17 @@ export const AGENTS: AgentAnalysis[] = [
           "sdk/packages/core/src/extensions/mcp/manager.ts:L39-L46"
         ],
         "keep": {
-          "zh": "SKILL.md frontmatter 技能模型 + 三级优先级 + 完整 MCP 管理器，让能力既可本地扩展也可企业远程下发。",
+          "zh": "能力既可本地扩展、也能企业远程下发：\n- skills.ts 发现 SKILL.md、校验 frontmatter、按 remote(企业)>global>project 解析\n- 工具层有 bash/editor/file-read/apply-patch/web-fetch/search 等执行器\n- MCP 子系统完整：InMemoryMcpManager、oauth、config-loader、policies",
           "en": "SKILL.md frontmatter skill model + three-tier precedence + a full MCP manager let capabilities be extended locally and pushed remotely by enterprises."
         },
         "fix": {
-          "zh": "技能启用状态分散在 frontmatter 与 UI 切换两处（代码注释提到需双写同步），存在漂移风险；统一单一真相源会更稳健。",
+          "zh": "技能启用状态分散在 frontmatter 和 UI 切换两处（注释提到要双写同步），有漂移风险；统一单一真相源会更稳。",
           "en": "Skill enabled-state lives in two places — frontmatter and the UI toggle (code comments note both must be written) — creating drift risk; a single source of truth would be more robust."
         }
       },
       "cost": {
         "score": 58,
-        "zh": "成本以用量聚合为主。session-runtime-orchestrator 维护 currentRunUsage（inputTokens/outputTokens 及 cacheRead/cacheWrite 缓存令牌），在 usage-updated 事件中回写本轮用量；spawn_agent 子代理也回传 input/output token 用量；compaction 遥测记录 tokensBefore/After/Saved。模型与 BYOK 经 providerConfig/providerId/modelId 配置驱动。但 core 内未见显式的美元成本计算或预算上限闭环，成本更多是可观测的 token 指标而非主动管控。",
+        "zh": "成本主要是把用量汇总起来看，谈不上主动管控。",
         "en": "Cost is mainly usage aggregation. session-runtime-orchestrator maintains currentRunUsage (inputTokens/outputTokens plus cacheRead/cacheWrite tokens), writing per-run usage back on the usage-updated event; spawn_agent sub-agents also return input/output token usage; and compaction telemetry records tokensBefore/After/Saved. Models and BYOK are driven via providerConfig/providerId/modelId. But core shows no explicit dollar-cost computation or budget-cap loop — cost is observable token metrics rather than active control.",
         "citations": [
           "sdk/packages/core/src/runtime/orchestration/session-runtime-orchestrator.ts:L338-L343",
@@ -932,17 +956,17 @@ export const AGENTS: AgentAnalysis[] = [
           "sdk/packages/core/src/extensions/context/compaction.ts:L391-L410"
         ],
         "keep": {
-          "zh": "逐轮聚合 input/output 与缓存读写令牌，并贯穿到子代理与压缩遥测，用量可观测性扎实。",
+          "zh": "用量可观测性扎实：逐轮聚合 input/output 和缓存读写令牌，贯穿到子代理和压缩遥测。",
           "en": "Per-run aggregation of input/output and cache read/write tokens, propagated through sub-agents and compaction telemetry, gives solid usage observability."
         },
         "fix": {
-          "zh": "core 缺少令牌→美元的定价表与预算/上限熔断；compaction.ts 注释也指出插件/hook 路径绕过遥测，统计存在盲区。",
+          "zh": "缺主动管控和统计盲区：\n- core 里没有令牌→美元的定价表，也没有预算/上限熔断\n- compaction.ts 注释指出插件/hook 路径会绕过遥测，统计有盲区",
           "en": "core lacks a token→dollar pricing table and budget/cap circuit-breaker; compaction.ts comments also note plugin/hook paths bypass telemetry, leaving accounting blind spots."
         }
       },
       "sandbox": {
         "score": 66,
-        "zh": "沙箱体现为细粒度的批准/权限闸门，而非 OS 级隔离。AutoApprovalSettings 提供按动作的开关：读/写文件、是否允许越出工作目录的外部读写、安全命令 vs 全部命令、浏览器、MCP，默认仅自动放行读文件与安全命令。updateAutoApprovalSettings 用版本号做乐观并发合并、保留未指定字段。SDK 侧 requestDesktopToolApproval 以请求/决策文件 IPC 加超时轮询实现人审批；spawn_agent 还能把 toolPolicies 与 requestToolApproval 下发给子代理。",
+        "zh": "沙箱是细粒度的批准闸门，不是 OS 级隔离。",
         "en": "The sandbox manifests as fine-grained approval/permission gating rather than OS-level isolation. AutoApprovalSettings exposes per-action toggles: read/write files, whether to allow reads/writes outside the working directory, safe-commands vs all-commands, browser, and MCP, defaulting to auto-allowing only file reads and safe commands. updateAutoApprovalSettings does version-stamped optimistic-concurrency merging that preserves unspecified fields. On the SDK side, requestDesktopToolApproval implements human approval via request/decision file IPC with timeout polling, and spawn_agent can forward toolPolicies and requestToolApproval to sub-agents.",
         "citations": [
           "apps/vscode/src/shared/AutoApprovalSettings.ts:L1-L44",
@@ -951,17 +975,17 @@ export const AGENTS: AgentAnalysis[] = [
           "sdk/packages/core/src/extensions/tools/team/spawn-agent-tool.ts:L100-L141"
         ],
         "keep": {
-          "zh": "按动作细分的自动批准、工作目录内/外读写区分、安全命令与全命令分级，加上可下发到子代理的审批策略，权限模型清晰可控。",
+          "zh": "权限模型清晰可控：\n- 按动作细分自动批准（读/写文件、是否越出工作目录、安全命令 vs 全命令、浏览器、MCP），默认只放行读文件和安全命令\n- updateAutoApprovalSettings 用版本号做乐观合并\n- 审批策略可下发给子代理",
           "en": "Per-action auto-approval, an in-workspace vs external read/write distinction, safe-vs-all command tiers, and approval policies forwardable to sub-agents give a clear, controllable permission model."
         },
         "fix": {
-          "zh": "本质是批准闸门而非进程/文件系统级真实隔离，恶意命令在批准后无容器/沙箱兜底；引入容器化或系统调用限制可提升安全下限。",
+          "zh": "本质是批准闸门而非进程/文件系统级真实隔离，命令一旦批准就没有容器兜底；引入容器化或系统调用限制能抬高安全下限。",
           "en": "It is fundamentally an approval gate, not real process/filesystem isolation — once approved, a malicious command has no container/sandbox backstop; containerization or syscall restriction would raise the security floor."
         }
       },
       "multiagent": {
         "score": 86,
-        "zh": "Cline 拥有真正的多智能体团队系统（不止 Plan/Act 双模式）。spawn-agent-tool.ts 暴露 spawn_agent 工具，用自定义系统提示创建受控子代理，携带独立工具集、toolPolicies、审批回调与生命周期 hooks，并回传文本/迭代数/用量。multi-agent.ts 的 AgentTeam 为每个成员各起一个 SessionRuntime，支持 routeTo/continueTo、runParallel、runSequential、runPipeline（带消息转换器）与 abortAll，并有 worker-reviewer 现成编排。team-tools.ts 进一步提供 spawn teammate、run task、await runs、broadcast、邮箱读写、mission log、outcome/fragment 评审等成体系团队工具，runtime.ts 导出 AgentTeamsRuntime 与 bootstrapAgentTeams。",
+        "zh": "Cline 有一套货真价实的多代理团队系统，不止 Plan/Act 双模式。",
         "en": "Cline has a genuine multi-agent team system (not just Plan/Act dual-mode). spawn-agent-tool.ts exposes a spawn_agent tool that creates a controlled sub-agent with a custom system prompt, its own toolset, toolPolicies, approval callback, and lifecycle hooks, returning text/iterations/usage. multi-agent.ts's AgentTeam spins up a SessionRuntime per member and supports routeTo/continueTo, runParallel, runSequential, runPipeline (with a message transformer), and abortAll, plus a ready-made worker-reviewer orchestration. team-tools.ts further provides a full suite of team tools — spawn teammate, run task, await runs, broadcast, mailbox read/write, mission log, and outcome/fragment review — and runtime.ts exports AgentTeamsRuntime and bootstrapAgentTeams.",
         "citations": [
           "sdk/packages/core/src/extensions/tools/team/multi-agent.ts:L176-L501",
@@ -970,11 +994,11 @@ export const AGENTS: AgentAnalysis[] = [
           "sdk/packages/core/src/extensions/tools/team/runtime.ts:L15-L54"
         ],
         "keep": {
-          "zh": "spawn_agent 子代理 + AgentTeam 并行/串行/流水线 + 邮箱/任务/产出物评审的团队工具，是开源 harness 中少见的完整多智能体编排栈。",
+          "zh": "开源 harness 里少见的完整多智能体编排栈：\n- spawn_agent 用自定义提示拉起受控子代理，带独立工具集、toolPolicies、审批回调、生命周期 hooks\n- AgentTeam 支持并行/串行/流水线（带消息转换器）和 abortAll\n- team-tools.ts 提供拉队友、广播、邮箱、mission log、产出物评审等团队工具",
           "en": "spawn_agent sub-agents + AgentTeam parallel/sequential/pipeline + mailbox/task/outcome-review team tools form a complete multi-agent orchestration stack rare among open-source harnesses."
         },
         "fix": {
-          "zh": "成员间通过邮箱/广播显式协调，缺少自动的任务分解与调度器；teammate API 有 10 分钟硬超时，长任务编排需人工或上层逻辑补足。",
+          "zh": "成员间靠邮箱/广播显式协调，缺自动的任务分解与调度器；teammate API 有 10 分钟硬超时，长任务编排要人工或上层逻辑补。",
           "en": "Members coordinate explicitly via mailbox/broadcast but there is no automatic task-decomposition scheduler, and the teammate API has a hard 10-minute timeout, so long-running orchestration needs human or higher-level logic to fill the gap."
         }
       }
@@ -996,23 +1020,27 @@ export const AGENTS: AgentAnalysis[] = [
       "apps/vscode/src/core/context/instructions/user-instructions/skills.ts",
       "apps/vscode/src/core/context/instructions/user-instructions/workflows.ts",
       "apps/vscode/src/core/context/context-tracking/FileContextTracker.ts"
-    ]
+    ],
+    "version": {
+      "zh": "v3.86.0",
+      "en": "v3.86.0"
+    }
   },
   {
     "id": "gemini-cli",
     "name": "Gemini CLI",
-    "vendor": "Google",
+    "vendor": "开源",
     "lang": "TypeScript",
     "evidenceBasis": "source",
     "repo": "google-gemini/gemini-cli",
     "verdict": {
-      "zh": "工程成熟度极高的开源 CLI：1M 上下文配合多阶段压缩与校验、完整 MCP/技能/扩展生态、策略引擎加操作系统级沙箱（Seatbelt/bwrap/容器）、以及真实的本地与 A2A 远程子代理系统，整体能力均衡且偏强。",
+      "zh": "工程成熟度极高的开源 CLI：1M 上下文配多阶段压缩与校验，MCP/技能/扩展生态完整，还有策略引擎加 OS 级沙箱和真实的本地/远程子代理系统。整体能力均衡且偏强。",
       "en": "A highly mature open-source CLI: a 1M-token window paired with multi-stage compaction-plus-verification, a full MCP/skills/extensions ecosystem, a policy engine atop OS-level sandboxing (Seatbelt/bwrap/containers), and a genuine local + A2A remote sub-agent system — broadly strong across the board."
     },
     "cells": {
       "memory": {
         "score": 84,
-        "zh": "三层持久化：可配置的 GEMINI.md 上下文文件 + 私有 MEMORY.md 索引（按设备/inode 去重的分层发现），每轮对话以 JSONL 追加落盘支持会话恢复，外加后台抽取代理扫描历史会话自动沉淀技能与记忆（带跨实例锁与节流）。记忆改为直接编辑 markdown，无 save_memory 工具。",
+        "zh": "持久化分三层，自动沉淀长期记忆，明显强于多数同类。",
         "en": "Three layers of persistence: configurable GEMINI.md context files plus a private MEMORY.md index (hierarchical discovery deduped by device/inode), every turn appended to disk as JSONL for session resume, and a background extraction agent that mines past sessions into skills/memory (with cross-instance lock and throttle). Memory is edited directly as markdown — there is no save_memory tool.",
         "citations": [
           "packages/core/src/tools/memoryTool.ts:L11-L48",
@@ -1021,17 +1049,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/core/src/services/memoryService.ts:L1126-L1155"
         ],
         "keep": {
-          "zh": "保留分层 GEMINI.md + MEMORY.md 索引与后台会话抽取的组合，这套自动沉淀长期记忆的设计明显强于多数同类。",
+          "zh": "三层组合做自动长期记忆：\n- 可配置的 GEMINI.md 上下文文件 + 私有 MEMORY.md 索引（按设备/inode 去重的分层发现）\n- 每轮对话以 JSONL 追加落盘，支持会话恢复\n- 后台抽取代理扫历史会话，自动沉淀技能和记忆（带跨实例锁与节流）",
           "en": "Keep the layered GEMINI.md + MEMORY.md index combined with background session extraction — this auto-distillation of long-term memory clearly exceeds most peers."
         },
         "fix": {
-          "zh": "记忆写入依赖模型直接编辑 markdown，缺少结构化/带校验的写记忆原语，易出现重复或漂移；可补一个受控的记忆写入接口。",
+          "zh": "记忆写入靠模型直接编辑 markdown，缺结构化、带校验的写记忆原语，容易重复或漂移；可补一个受控的记忆写入接口。",
           "en": "Memory writes rely on the model editing markdown directly, lacking a structured/validated write-memory primitive, which invites duplication or drift; a controlled memory-write API would help."
         }
       },
       "context": {
         "score": 91,
-        "zh": "压缩链路非常完善：先做反向 token 预算截断（最近工具输出全保、超 5 万 token 预算的旧输出落盘截断），再以 state_snapshot 提示做 LLM 摘要，并追加一轮自我校验探针防止信息丢失，最后有 token 膨胀回退保护；默认 0.5 触发、保留尾部 30%，模型窗口达 1,048,576 token。",
+        "zh": "压缩链路非常完善，还带自纠错，属同类顶配。",
         "en": "A very complete compaction pipeline: first a reverse-token-budget truncation (recent tool outputs kept whole, older outputs beyond a 50k-token budget spilled to disk and truncated), then an LLM summary driven by a state_snapshot prompt, followed by a self-verification probe to avoid information loss, with a token-inflation rollback guard; default 0.5 trigger, keeps the last 30%, on a 1,048,576-token window.",
         "citations": [
           "packages/core/src/context/chatCompressionService.ts:L137-L237",
@@ -1039,17 +1067,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/core/src/core/tokenLimits.ts:L20-L39"
         ],
         "keep": {
-          "zh": "保留摘要后的二次校验探针与膨胀回退判断——这种自纠错压缩在同类工具里属于顶配。",
+          "zh": "自纠错压缩是同类里的顶配：\n- 先按 token 预算从后往前截断（最近输出全留，超 5 万 token 的旧输出落盘截断）\n- 用 state_snapshot 提示让 LLM 摘要，再跟一轮自我校验探针防丢信息\n- 压完反而更大就触发膨胀回退",
           "en": "Keep the post-summary verification probe and inflation-rollback check — this self-correcting compaction is top-tier among peers."
         },
         "fix": {
-          "zh": "压缩需两次额外 LLM 调用（摘要+校验），在高频自动压缩下会带来延迟与成本；可对小历史走更轻量路径。",
+          "zh": "压缩要两次额外 LLM 调用（摘要+校验），高频自动压缩下带来延迟和成本；可对小历史走更轻量的路径。",
           "en": "Compaction costs two extra LLM calls (summary + verify), adding latency/cost under frequent auto-compaction; a lighter path for small histories would help."
         }
       },
       "skill": {
         "score": 89,
-        "zh": "扩展机制丰富：SkillManager 以「内置→扩展→用户→工作区」优先级发现技能并受文件夹信任门控；McpClientManager 接入完整 MCP（Stdio/SSE/StreamableHTTP 传输 + OAuth/Google 凭据），另有 25 个内置工具类与可从注册表/GitHub 安装的扩展体系。",
+        "zh": "扩展机制丰富：技能优先级 + 完整 MCP + 扩展注册表。",
         "en": "A rich extension surface: SkillManager discovers skills with builtin→extension→user→workspace precedence under folder-trust gating; McpClientManager speaks full MCP (Stdio/SSE/StreamableHTTP transports + OAuth/Google credentials), alongside 25 built-in tool classes and an extensions system installable from a registry or GitHub.",
         "citations": [
           "packages/core/src/skills/skillManager.ts:L50-L99",
@@ -1057,17 +1085,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/core/src/tools/mcp-client.ts:L7-L62"
         ],
         "keep": {
-          "zh": "保留 MCP 全传输+OAuth、技能优先级覆盖与扩展注册表三位一体的开放生态，可扩展性极强。",
+          "zh": "三位一体的开放生态，可扩展性极强：\n- SkillManager 按『内置→扩展→用户→工作区』优先级发现技能，受文件夹信任门控\n- McpClientManager 接完整 MCP（Stdio/SSE/StreamableHTTP + OAuth/Google 凭据）\n- 25 个内置工具类，加可从注册表/GitHub 安装的扩展体系",
           "en": "Keep the trifecta of full-transport MCP + OAuth, precedence-based skill overrides, and an extensions registry — extensibility is excellent."
         },
         "fix": {
-          "zh": "技能/扩展/MCP 三套加载与优先级规则较复杂，冲突仅以告警提示；可统一冲突解析与可见性诊断降低用户心智负担。",
+          "zh": "技能、扩展、MCP 三套加载与优先级规则较复杂，冲突只以告警提示；统一冲突解析与可见性诊断能降低心智负担。",
           "en": "Three separate loading/precedence systems (skills/extensions/MCP) are complex and conflicts are surfaced only as warnings; unifying conflict resolution and visibility diagnostics would reduce cognitive load."
         }
       },
       "cost": {
         "score": 77,
-        "zh": "成本控制有真实机制而非仅靠定价：ModelRouterService 用 Gemma/数值分类器把简单请求路由到更便宜的模型，FallbackHandler 在配额/错误时切换备用模型，压缩链路对函数响应设 5 万 token 预算并对超额工具输出落盘截断，叠加工具输出蒙版/蒸馏服务降低上下文体积。",
+        "zh": "成本控制有真机制，不只靠定价，但缺硬性上限。",
         "en": "Cost control is a real mechanism, not just pricing: ModelRouterService uses Gemma/numerical classifiers to route simple requests to cheaper models, FallbackHandler switches to a fallback model on quota/errors, and compaction enforces a 50k-token budget on function responses with disk-spill truncation, plus tool-output masking/distillation services that shrink context.",
         "citations": [
           "packages/core/src/routing/modelRouterService.ts:L39-L63",
@@ -1075,17 +1103,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/core/src/context/chatCompressionService.ts:L41-L52"
         ],
         "keep": {
-          "zh": "保留「分类器路由 + 配额回退 + 响应预算截断」的组合，能在不牺牲体验下系统性降低 token 消耗。",
+          "zh": "系统性降 token 而不牺牲体验：\n- ModelRouterService 用 Gemma+数值分类器把简单请求引到更便宜的模型\n- FallbackHandler 在配额不足/出错时切备用模型\n- 压缩给函数响应设 5 万 token 预算，超额工具输出落盘截断，再叠工具输出蒙版/蒸馏",
           "en": "Keep the classifier-routing + quota-fallback + response-budget-truncation combination, which systematically lowers token spend without hurting UX."
         },
         "fix": {
-          "zh": "缺少面向用户的硬性预算上限/花费熔断（仅有遥测计费事件），长任务成本不可预设上限；可加每会话 token 或费用阈值。",
+          "zh": "缺面向用户的硬性预算上限/花费熔断（只有遥测计费事件），长任务成本不可预设上限；可加每会话 token 或费用阈值。",
           "en": "There is no user-facing hard budget cap / spend circuit-breaker (only telemetry billing events), so long-task cost has no preset ceiling; per-session token or cost thresholds would help."
         }
       },
       "sandbox": {
         "score": 88,
-        "zh": "双层防护：PolicyEngine（约 950 行）支持按优先级排序的规则、MCP 通配符匹配、子代理作用域规则、Shell 命令解析与危险/安全启发式，以及 DEFAULT/AUTO_EDIT/YOLO 审批模式；其下是真正的操作系统级沙箱——macOS Seatbelt、Linux bubblewrap（--unshare-all/--die-with-parent/只读绑定）、Windows，并可选 docker/podman/sandbox-exec 容器隔离。",
+        "zh": "防护双层：策略引擎 + 真正的 OS 级沙箱。",
         "en": "Two layers: PolicyEngine (~950 lines) supports priority-sorted rules, MCP wildcard matching, subagent-scoped rules, shell-command parsing with dangerous/safe heuristics, and DEFAULT/AUTO_EDIT/YOLO approval modes; beneath it sits genuine OS-level sandboxing — macOS Seatbelt, Linux bubblewrap (--unshare-all / --die-with-parent / read-only binds), Windows, plus optional docker/podman/sandbox-exec container isolation.",
         "citations": [
           "packages/core/src/policy/policy-engine.ts:L198-L301",
@@ -1094,17 +1122,17 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/cli/src/config/sandboxConfig.ts:L24-L57"
         ],
         "keep": {
-          "zh": "保留策略引擎与原生沙箱（Seatbelt/bwrap/容器）协同的纵深防御，权限模型既细粒度又有真实隔离支撑。",
+          "zh": "权限既细粒度又有真实隔离支撑：\n- PolicyEngine（约 950 行）支持优先级规则、MCP 通配、子代理作用域、Shell 命令解析与危险/安全启发式，配 DEFAULT/AUTO_EDIT/YOLO 审批模式\n- 下层是真 OS 级沙箱：macOS Seatbelt、Linux bubblewrap、Windows，可选 docker/podman/sandbox-exec 容器隔离",
           "en": "Keep the defense-in-depth of the policy engine combined with native sandboxing (Seatbelt/bwrap/containers) — a fine-grained permission model backed by real isolation."
         },
         "fix": {
-          "zh": "OS 沙箱按平台分叉（mac/linux/windows）实现量大、维护成本高，且默认未启用需用户显式开启；可强化默认安全姿态与跨平台一致性。",
+          "zh": "OS 沙箱按平台分叉（mac/linux/windows）实现量大、维护成本高，且默认未启用需用户显式开；可强化默认安全姿态与跨平台一致性。",
           "en": "OS sandboxing forks per platform (mac/linux/windows) with heavy, costly-to-maintain code and is off by default until explicitly enabled; a stronger default posture and cross-platform consistency would help."
         }
       },
       "multiagent": {
         "score": 83,
-        "zh": "真实的子代理系统而非桩：AgentRegistry 注册多个内置代理（CodebaseInvestigator、Generalist、CliHelp、Browser）并支持从目录加载，统一的 AgentTool 负责查找、参数映射与委派；LocalAgentExecutor（约 1525 行）以 complete_task 收尾、受 RunConfig 限制（默认 30 轮/10 分钟）；Scheduler 对可并行工具用 Promise.all 批量并发执行；另有 a2a-server 与 remote-invocation 提供 A2A 远程子代理协议。",
+        "zh": "真实的子代理系统而非空壳，但默认仍是顺序委派。",
         "en": "A genuine sub-agent system, not a stub: AgentRegistry registers multiple built-in agents (CodebaseInvestigator, Generalist, CliHelp, Browser) and loads more from disk, with a unified AgentTool handling lookup, param mapping, and delegation; LocalAgentExecutor (~1525 lines) terminates via complete_task under RunConfig limits (default 30 turns / 10 min); the Scheduler runs parallelizable tools concurrently via Promise.all; and an a2a-server plus remote-invocation provide an A2A remote sub-agent protocol.",
         "citations": [
           "packages/core/src/agents/agent-tool.ts:L43-L95",
@@ -1113,11 +1141,11 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/core/src/scheduler/scheduler.ts:L463-L509"
         ],
         "keep": {
-          "zh": "保留本地子代理 + A2A 远程协议 + 工具级并行调度的完整链路，子代理可独立带工具注册表与策略作用域，设计成熟。",
+          "zh": "完整链路、设计成熟：\n- AgentRegistry 注册多个内置代理（CodebaseInvestigator、Generalist、CliHelp、Browser），也能从目录加载\n- LocalAgentExecutor（约 1525 行）以 complete_task 收尾，受 RunConfig 约束（默认 30 轮/10 分钟）\n- Scheduler 对可并行工具用 Promise.all 批量并发，另有 a2a-server 提供 A2A 远程子代理协议",
           "en": "Keep the full pipeline of local sub-agents + A2A remote protocol + tool-level parallel scheduling; sub-agents carry their own tool registry and policy scope — a mature design."
         },
         "fix": {
-          "zh": "并行发生在单代理的工具批次层面，多个子代理之间默认仍是顺序委派，缺少原生的多代理并行扇出与共享黑板；可增加并发子代理编排。",
+          "zh": "并行只发生在单代理的工具批次层面，多个子代理之间默认仍顺序委派，缺原生的并行扇出和共享黑板；可加并发子代理编排。",
           "en": "Parallelism happens at the tool-batch level within one agent; multiple sub-agents are still delegated sequentially by default, lacking native multi-agent parallel fan-out and a shared blackboard; concurrent sub-agent orchestration would help."
         }
       }
@@ -1144,6 +1172,10 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/core/src/agents/agent-scheduler.ts",
       "packages/core/src/agents/local-executor.ts",
       "packages/core/src/scheduler/scheduler.ts"
-    ]
+    ],
+    "version": {
+      "zh": "v0.47.0",
+      "en": "v0.47.0"
+    }
   }
 ];

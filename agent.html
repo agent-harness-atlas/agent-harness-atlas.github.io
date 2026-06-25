@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Agent Detail · Harness Atlas</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -176,12 +177,16 @@
     .dim-score .denom { font-size: 13px; color: var(--muted); font-weight: 400; }
     .dim-score.is-pending { color: var(--faint); }
     .dim-band { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--c, var(--muted)); display: block; text-align: right; margin-top: 2px; }
-    .dim-evidence { font-family: var(--serif); font-size: 14.5px; line-height: 1.62; color: color-mix(in srgb, var(--ink) 86%, var(--muted)); margin: 12px 0 16px; }
+    .dim-evidence { font-family: var(--serif); font-size: 14.5px; line-height: 1.62; color: color-mix(in srgb, var(--ink) 86%, var(--muted)); margin: 12px 0 18px; }
     .dim-evidence code { font-family: var(--mono); font-size: 0.86em; background: var(--raised); padding: 1px 6px; border-radius: 3px; }
-    .dim-tags { display: flex; flex-direction: column; gap: 8px; }
-    .tag-row { display: grid; grid-template-columns: 58px 1fr; gap: 12px; font-size: 13.5px; line-height: 1.5; align-items: start; }
-    .tag-row span:last-child { font-family: var(--serif); color: color-mix(in srgb, var(--ink) 82%, var(--muted)); }
-    .tag-row code { font-family: var(--mono); font-size: 0.84em; background: var(--raised); padding: 1px 5px; border-radius: 3px; }
+    .dim-tags { display: flex; flex-direction: column; gap: 12px; }
+    .tag-row { display: grid; grid-template-columns: 58px 1fr; gap: 12px; font-size: 13.5px; line-height: 1.55; align-items: start; }
+    .tag-body { font-family: var(--serif); color: color-mix(in srgb, var(--ink) 82%, var(--muted)); }
+    .tag-body code { font-family: var(--mono); font-size: 0.84em; background: var(--raised); padding: 1px 5px; border-radius: 3px; }
+    .tag-lead { display: block; margin-bottom: 5px; }
+    .tag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+    .tag-list li { position: relative; padding-left: 15px; }
+    .tag-list li::before { content: ""; position: absolute; left: 2px; top: 0.62em; width: 4px; height: 4px; border-radius: 50%; background: var(--c, var(--muted)); }
     .tag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; padding: 4px 0; border-radius: 3px; color: #fff; text-align: center; align-self: start; }
     html[data-theme="dark"] .tag { color: #16140f; }
     .tag-keep { background: var(--strong); }
@@ -212,9 +217,12 @@
     .basis-docs .basis-tag { background: var(--functional); }
     .basis .basis-note { font-family: var(--serif); font-size: 13px; line-height: 1.45; color: var(--muted); }
 
-    /* ===== Per-dimension citations ===== */
-    .dim-cites { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 10px; margin: 4px 0 14px; padding-top: 12px; border-top: 1px dashed var(--rule); }
-    .dim-cites .cites-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); }
+    /* ===== Per-dimension citations (card footer, pinned to bottom) ===== */
+    .dim { display: flex; flex-direction: column; }
+    .dim-tags { flex: 1 1 auto; }
+    .dim-cites { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px 10px; margin: 18px 0 0; padding-top: 14px; border-top: 1px dashed var(--rule); }
+    .dim-cites .cites-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); flex: 0 0 auto; }
+    .dim-cites .cites-list { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; flex: 1 1 auto; }
     .cite { font-family: var(--mono); font-size: 11px; line-height: 1.4; color: var(--muted); border-bottom: 1px solid transparent; transition: color .15s, border-color .15s; word-break: break-all; }
     .cite:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
     .cite code { font-family: var(--mono); font-size: 0.94em; background: var(--raised); padding: 1px 5px; border-radius: 3px; color: inherit; }
@@ -236,7 +244,6 @@
           </svg>
         </span>
         <span class="mark">Agent Harness <b>Atlas</b></span>
-        <span class="ver" id="ver">—</span>
       </a>
       <span class="spacer"></span>
       <button class="icon-btn" id="langBtn" type="button" aria-label="Switch language" title="中文 / English">

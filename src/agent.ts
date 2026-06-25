@@ -17,6 +17,7 @@ import {
   agentById,
   setLang,
   setTheme,
+  mdRich,
 } from "./atlas";
 import type { AgentAnalysis } from "./types";
 
@@ -151,16 +152,17 @@ function render(): void {
     const fix = c.fix ? t(c.fix, state.lang) : "";
     let tags = "";
     if (keep && keep !== "—")
-      tags += `<div class="tag-row"><span class="tag tag-keep">${t(UI.keep, state.lang)}</span><span>${md(keep)}</span></div>`;
+      tags += `<div class="tag-row"><span class="tag tag-keep">${t(UI.keep, state.lang)}</span><div class="tag-body">${mdRich(keep)}</div></div>`;
     if (fix && fix !== "—")
-      tags += `<div class="tag-row"><span class="tag tag-fix">${t(UI.fix, state.lang)}</span><span>${md(fix)}</span></div>`;
+      tags += `<div class="tag-row"><span class="tag tag-fix">${t(UI.fix, state.lang)}</span><div class="tag-body">${mdRich(fix)}</div></div>`;
     const cites = (c.citations || []).length
       ? '<div class="dim-cites" data-testid="cites-' +
         d.id +
         '">' +
-        `<span class="cites-label">${a.evidenceBasis === "docs" ? (state.lang === "zh" ? "文档" : "Docs") : (state.lang === "zh" ? "源码" : "Source")}</span>` +
+        `<span class="cites-label">${a.evidenceBasis === "docs" ? (state.lang === "zh" ? "参考文档" : "Docs") : (state.lang === "zh" ? "参考代码" : "Source")}</span>` +
+        '<div class="cites-list">' +
         c.citations.map((cit) => renderCite(cit, a)).join("") +
-        "</div>"
+        "</div></div>"
       : "";
     return (
       `<article class="dim b-${b.cvar}" data-testid="report-${d.id}">` +
@@ -169,8 +171,8 @@ function render(): void {
       `<div><div class="dim-score${isNum ? "" : " is-pending"}">${isNum ? c.score : "—"}<span class="denom">/100</span></div><span class="dim-band">${t(b, state.lang)}</span></div>` +
       "</div>" +
       `<p class="dim-evidence">${md(t(c, state.lang))}</p>` +
-      cites +
       (tags ? `<div class="dim-tags">${tags}</div>` : "") +
+      cites +
       "</article>"
     );
   }).join("");
@@ -209,8 +211,6 @@ function renderCite(cit: string, a: AgentAnalysis): string {
 function onLang(lang: Lang): void {
   state.lang = lang;
   setLang(lang);
-  const v = document.getElementById("ver");
-  if (v) v.textContent = META.version;
   render();
 }
 function onTheme(theme: "light" | "dark"): void {
@@ -222,8 +222,6 @@ document.getElementById("langBtn")!.addEventListener("click", () => onLang(state
 document.getElementById("themeBtn")!.addEventListener("click", () => onTheme(state.theme === "light" ? "dark" : "light"));
 window.addEventListener("hashchange", render);
 
-const ver = document.getElementById("ver");
-if (ver) ver.textContent = META.version;
 setTheme(state.theme);
 setLang(state.lang);
 render();
