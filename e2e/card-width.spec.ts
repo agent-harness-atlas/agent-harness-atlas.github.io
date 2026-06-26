@@ -59,7 +59,7 @@ for (const w of OVERFLOW_VIEWPORTS) {
         const sel = ".tag-body, .tag-list li, .tag-lead, .dim-evidence, .cite, .dim-name";
         for (const card of document.querySelectorAll(".dim")) {
           const cr = card.getBoundingClientRect();
-          const padR = parseFloat(getComputedStyle(card).paddingRight);
+          const padR = Number.parseFloat(getComputedStyle(card).paddingRight);
           const contentRight = cr.right - padR;
           for (const el of card.querySelectorAll(sel)) {
             const over = Math.round(el.getBoundingClientRect().right - contentRight);
