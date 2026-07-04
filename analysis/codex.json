@@ -51,7 +51,7 @@
       "zh": "扩展面很宽：`core-skills` 文件级体系 + MCP + 插件 + 动态工具。",
       "en": "Broad extension surface: `core-skills` provides a file-based skill system (loader/render/injection/service), the `skills` crate installs embedded system skills into `CODEX_HOME/skills/.system`, and it integrates with MCP (`mcp_tool_call.rs`, 2200+ lines), plugin installation, and a dynamic tool registry.",
       "citations": [
-        "codex-rs/core-skills/src/lib.rs:L1-L36",
+        "codex-rs/core-skills/src/lib.rs:L1-L35",
         "codex-rs/skills/src/lib.rs:L10-L31",
         "codex-rs/core/src/context/available_skills_instructions.rs:L24-L48"
       ],
@@ -106,7 +106,7 @@
       "en": "Has a native sub-agent system: `codex_delegate.rs` launches interactive sub-Codex threads with wired IO channels, `multi_agents_v2` exposes spawn/send_message/wait/interrupt/list/followup collaboration tools plus encrypted `InterAgentCommunication`, and `agent/control.rs` manages the registry, roles, and status.",
       "citations": [
         "codex-rs/core/src/codex_delegate.rs:L63-L76",
-        "codex-rs/core/src/tools/handlers/multi_agents_v2.rs:L28-L55",
+        "codex-rs/core/src/tools/handlers/multi_agents_v2.rs:L27-L54",
         "codex-rs/core/src/tools/handlers/multi_agents_v2/spawn.rs:L39-L68"
       ],
       "keep": {
@@ -136,7 +136,7 @@
     "codex-rs/utils/output-truncation/src/lib.rs"
   ],
   "version": {
-    "zh": "v0.137.0",
-    "en": "v0.137.0"
+    "zh": "v0.142.5",
+    "en": "v0.142.5"
   }
 }

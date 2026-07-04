@@ -4,8 +4,8 @@
 import type { AgentAnalysis, Meta } from "../types";
 
 export const META: Meta = {
-  "updated": "2026-W26",
-  "version": "4.0",
+  "updated": "2026-W27",
+  "version": "4.1",
   "sourceNote": {
     "zh": "评分由真实源码分析（开源）或官方文档（闭源）得出，逐条可核",
     "en": "Scores derived from real source analysis (open) or official docs (closed), each verifiable"
@@ -139,8 +139,8 @@ export const AGENTS: AgentAnalysis[] = [
     },
     "keyFiles": [],
     "version": {
-      "zh": "v2.1.187",
-      "en": "v2.1.187"
+      "zh": "v2.1.201",
+      "en": "v2.1.201"
     }
   },
   {
@@ -196,7 +196,7 @@ export const AGENTS: AgentAnalysis[] = [
         "zh": "扩展面很宽：`core-skills` 文件级体系 + MCP + 插件 + 动态工具。",
         "en": "Broad extension surface: `core-skills` provides a file-based skill system (loader/render/injection/service), the `skills` crate installs embedded system skills into `CODEX_HOME/skills/.system`, and it integrates with MCP (`mcp_tool_call.rs`, 2200+ lines), plugin installation, and a dynamic tool registry.",
         "citations": [
-          "codex-rs/core-skills/src/lib.rs:L1-L36",
+          "codex-rs/core-skills/src/lib.rs:L1-L35",
           "codex-rs/skills/src/lib.rs:L10-L31",
           "codex-rs/core/src/context/available_skills_instructions.rs:L24-L48"
         ],
@@ -251,7 +251,7 @@ export const AGENTS: AgentAnalysis[] = [
         "en": "Has a native sub-agent system: `codex_delegate.rs` launches interactive sub-Codex threads with wired IO channels, `multi_agents_v2` exposes spawn/send_message/wait/interrupt/list/followup collaboration tools plus encrypted `InterAgentCommunication`, and `agent/control.rs` manages the registry, roles, and status.",
         "citations": [
           "codex-rs/core/src/codex_delegate.rs:L63-L76",
-          "codex-rs/core/src/tools/handlers/multi_agents_v2.rs:L28-L55",
+          "codex-rs/core/src/tools/handlers/multi_agents_v2.rs:L27-L54",
           "codex-rs/core/src/tools/handlers/multi_agents_v2/spawn.rs:L39-L68"
         ],
         "keep": {
@@ -281,8 +281,8 @@ export const AGENTS: AgentAnalysis[] = [
       "codex-rs/utils/output-truncation/src/lib.rs"
     ],
     "version": {
-      "zh": "v0.137.0",
-      "en": "v0.137.0"
+      "zh": "v0.142.5",
+      "en": "v0.142.5"
     }
   },
   {
@@ -439,8 +439,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/ai/src/api/anthropic-messages.ts"
     ],
     "version": {
-      "zh": "v0.74.0",
-      "en": "v0.74.0"
+      "zh": "v0.80.3",
+      "en": "v0.80.3"
     }
   },
   {
@@ -485,7 +485,7 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/opencode/src/session/compaction.ts:L251-L297",
           "packages/opencode/src/session/compaction.ts:L299-L435",
           "packages/core/src/session/compaction.ts:L166-L219",
-          "packages/opencode/src/session/processor.ts:L750-L755"
+          "packages/opencode/src/session/processor.ts:L477-L482"
         ],
         "keep": {
           "zh": "多策略协同且预算感知，远超单纯依赖模型：\n- overflow.ts 按模型上限和保留输出预算算可用窗口、自动判溢出\n- compaction.ts 做尾部保留（带 token 预算和 splitTurn 拆分）、旧工具输出剪枝、媒体剥离\n- 专用 compaction 代理生成可锚定、能增量更新的摘要",
@@ -526,7 +526,7 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/core/src/util/token.ts:L3-L5",
           "packages/opencode/src/session/compaction.ts:L40-L41",
           "packages/opencode/src/session/compaction.ts:L251-L297",
-          "packages/opencode/src/session/processor.ts:L708-L727",
+          "packages/opencode/src/session/processor.ts:L438-L456",
           "packages/opencode/src/provider/transform.ts:L329-L344"
         ],
         "keep": {
@@ -602,8 +602,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/opencode/src/storage/storage.ts"
     ],
     "version": {
-      "zh": "v1.17.4",
-      "en": "v1.17.4"
+      "zh": "v1.17.13",
+      "en": "v1.17.13"
     }
   },
   {
@@ -1022,8 +1022,8 @@ export const AGENTS: AgentAnalysis[] = [
       "apps/vscode/src/core/context/context-tracking/FileContextTracker.ts"
     ],
     "version": {
-      "zh": "v3.86.0",
-      "en": "v3.86.0"
+      "zh": "v4.0.6",
+      "en": "v4.0.6"
     }
   },
   {
@@ -1174,8 +1174,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/core/src/scheduler/scheduler.ts"
     ],
     "version": {
-      "zh": "v0.47.0",
-      "en": "v0.47.0"
+      "zh": "v0.49.0",
+      "en": "v0.49.0"
     }
   }
 ];

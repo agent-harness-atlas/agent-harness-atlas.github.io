@@ -40,7 +40,7 @@
         "packages/opencode/src/session/compaction.ts:L251-L297",
         "packages/opencode/src/session/compaction.ts:L299-L435",
         "packages/core/src/session/compaction.ts:L166-L219",
-        "packages/opencode/src/session/processor.ts:L750-L755"
+        "packages/opencode/src/session/processor.ts:L477-L482"
       ],
       "keep": {
         "zh": "多策略协同且预算感知，远超单纯依赖模型：\n- overflow.ts 按模型上限和保留输出预算算可用窗口、自动判溢出\n- compaction.ts 做尾部保留（带 token 预算和 splitTurn 拆分）、旧工具输出剪枝、媒体剥离\n- 专用 compaction 代理生成可锚定、能增量更新的摘要",
@@ -81,7 +81,7 @@
         "packages/core/src/util/token.ts:L3-L5",
         "packages/opencode/src/session/compaction.ts:L40-L41",
         "packages/opencode/src/session/compaction.ts:L251-L297",
-        "packages/opencode/src/session/processor.ts:L708-L727",
+        "packages/opencode/src/session/processor.ts:L438-L456",
         "packages/opencode/src/provider/transform.ts:L329-L344"
       ],
       "keep": {
@@ -157,7 +157,7 @@
     "packages/opencode/src/storage/storage.ts"
   ],
   "version": {
-    "zh": "v1.17.4",
-    "en": "v1.17.4"
+    "zh": "v1.17.13",
+    "en": "v1.17.13"
   }
 }

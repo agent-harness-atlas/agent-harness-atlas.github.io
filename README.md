@@ -41,16 +41,16 @@
 
 综合分 = 六维取整平均（0–100）。定级阈值：**≥85 卓越 · ≥70 扎实 · ≥60 可用 · <60 薄弱**。
 
-### 当前榜单（2026-W26）
+### 当前榜单（2026-W27）
 
 | # | Agent | 综合 | 定级 | 证据来源 | 版本 |
 |---|-------|:----:|:----:|----------|------|
-| 1 | Gemini CLI | 85 | 卓越 | 源码 | v0.47.0 |
-| 2 | Claude Code | 84 | 扎实 | 文档（闭源） | v2.1.187 |
-| 3 | Codex CLI | 80 | 扎实 | 源码 | v0.137.0 |
-| 4 | Cline | 73 | 扎实 | 源码 | v3.86.0 |
-| 5 | opencode | 72 | 扎实 | 源码 | v1.17.4 |
-| 6 | Pi | 72 | 扎实 | 源码 | v0.74.0 |
+| 1 | Gemini CLI | 85 | 卓越 | 源码 | v0.49.0 |
+| 2 | Claude Code | 84 | 扎实 | 文档（闭源） | v2.1.201 |
+| 3 | Codex CLI | 80 | 扎实 | 源码 | v0.142.5 |
+| 4 | Cline | 73 | 扎实 | 源码 | v4.0.6 |
+| 5 | opencode | 72 | 扎实 | 源码 | v1.17.13 |
+| 6 | Pi | 72 | 扎实 | 源码 | v0.80.3 |
 | 7 | Cursor Agent | 67 | 可用 | 文档（闭源） | v3.9 |
 | 8 | Aider | 44 | 薄弱 | 源码 | v0.86.0 |
 
@@ -130,16 +130,16 @@ Every cell is **evidence-backed**: open-source projects are read at the source l
 
 Overall = rounded mean of the six (0–100). Bands: **≥85 Exceptional · ≥70 Strong · ≥60 Functional · <60 Broken**.
 
-### Current standings (2026-W26)
+### Current standings (2026-W27)
 
 | # | Agent | Overall | Band | Basis | Version |
 |---|-------|:-------:|:----:|-------|---------|
-| 1 | Gemini CLI | 85 | Exceptional | source | v0.47.0 |
-| 2 | Claude Code | 84 | Strong | docs (closed) | v2.1.187 |
-| 3 | Codex CLI | 80 | Strong | source | v0.137.0 |
-| 4 | Cline | 73 | Strong | source | v3.86.0 |
-| 5 | opencode | 72 | Strong | source | v1.17.4 |
-| 6 | Pi | 72 | Strong | source | v0.74.0 |
+| 1 | Gemini CLI | 85 | Exceptional | source | v0.49.0 |
+| 2 | Claude Code | 84 | Strong | docs (closed) | v2.1.201 |
+| 3 | Codex CLI | 80 | Strong | source | v0.142.5 |
+| 4 | Cline | 73 | Strong | source | v4.0.6 |
+| 5 | opencode | 72 | Strong | source | v1.17.13 |
+| 6 | Pi | 72 | Strong | source | v0.80.3 |
 | 7 | Cursor Agent | 67 | Functional | docs (closed) | v3.9 |
 | 8 | Aider | 44 | Broken | source | v0.86.0 |
 
