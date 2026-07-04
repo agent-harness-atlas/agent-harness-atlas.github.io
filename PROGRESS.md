@@ -44,3 +44,24 @@
 - Generated initial AGENTS.md / CONSTRAINTS.md / FEATURES.md / features.json / Makefile / scripts.
 - TODO: replace all `> **TODO**:` markers with project-specific content.
 - TODO: add the first real feature in `features.json` per the rules in `FEATURES.md`.
+
+## Session 2026-07-04T21:15:00+08:00 — weekly refresh 2026-W27 (automated cron)
+
+- **Version sweep** (gh releases for 6 source agents + docs changelogs for claude-code/cursor):
+  - Bumped: codex v0.137.0→**v0.142.5**, pi v0.74.0→**v0.80.3**, opencode v1.17.4→**v1.17.13**,
+    gemini-cli v0.47.0→**v0.49.0**, claude-code v2.1.187→**v2.1.201**, cline v3.86.0→**v4.0.6**.
+  - Unchanged: aider (v0.86.0), cursor (v3.9) — left untouched.
+- **No score/rank/band changes.** Reviewed the deltas for material harness change: claude-code
+  changelog = bug-fixes + background-agent plumbing (no dimension move); cline v4.0.0 = SDK-core
+  migration the analysis *already* describes (all 21 cline citations verified clean vs HEAD; v4's
+  "temporarily disabled subagents in VS Code UI" is a transient surface gate, SDK team-system code
+  intact → multiagent=86 stays supported). Codex/opencode/pi/gemini source capabilities unchanged.
+- **Re-anchored 4 drifted source citations** (files refactored/shrunk on HEAD, capability verified
+  present at new lines, not a score change): codex.skill core-skills/src/lib.rs L1-L36→L1-L35;
+  codex.multiagent multi_agents_v2.rs L28-L55→L27-L54; opencode.context processor.ts L750-755→L477-482;
+  opencode.cost processor.ts L708-727→L438-456.
+- **meta.json**: updated 2026-W26→**2026-W27**, version 4.0→**4.1**. README zh+en standings tables
+  restamped + version column updated (ranks/scores identical). Top3 unchanged (Gemini 85 / Claude 84 / Codex 80).
+- **Green gate**: build ✓ · verify-citations.py ✓ 0/~180 bad · vitest 56/56 ✓ · playwright 69/69 ✓.
+- **Published**: commit `7da7ebf` pushed to main (Bojun-Vvibe), deploy-pages.yml **completed/success**,
+  live bundle confirmed serving 2026-W27 + new versions. Work account (bojunchai_microsoft) restored active.
