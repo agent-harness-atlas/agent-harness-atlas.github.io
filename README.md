@@ -41,17 +41,17 @@
 
 综合分 = 六维取整平均（0–100）。定级阈值：**≥85 卓越 · ≥70 扎实 · ≥60 可用 · <60 薄弱**。
 
-### 当前榜单（2026-W27）
+### 当前榜单（2026-W29）
 
 | # | Agent | 综合 | 定级 | 证据来源 | 版本 |
 |---|-------|:----:|:----:|----------|------|
-| 1 | Gemini CLI | 85 | 卓越 | 源码 | v0.49.0 |
-| 2 | Claude Code | 84 | 扎实 | 文档（闭源） | v2.1.201 |
-| 3 | Codex CLI | 80 | 扎实 | 源码 | v0.142.5 |
-| 4 | Cline | 73 | 扎实 | 源码 | v4.0.6 |
-| 5 | opencode | 72 | 扎实 | 源码 | v1.17.13 |
-| 6 | Pi | 72 | 扎实 | 源码 | v0.80.3 |
-| 7 | Cursor Agent | 67 | 可用 | 文档（闭源） | v3.9 |
+| 1 | Gemini CLI | 85 | 卓越 | 源码 | v0.51.0 |
+| 2 | Claude Code | 84 | 扎实 | 文档（闭源） | v2.1.214 |
+| 3 | Codex CLI | 80 | 扎实 | 源码 | v0.144.5 |
+| 4 | Cline | 73 | 扎实 | 源码 | v4.0.9 |
+| 5 | opencode | 72 | 扎实 | 源码 | v1.18.3 |
+| 6 | Pi | 72 | 扎实 | 源码 | v0.80.10 |
+| 7 | Cursor Agent | 67 | 可用 | 文档（闭源） | v3.11 |
 | 8 | Aider | 44 | 薄弱 | 源码 | v0.86.0 |
 
 > 分数会随版本迭代和证据补充变化，以[线上版本](https://agent-harness-atlas.github.io/)为准。
@@ -130,17 +130,17 @@ Every cell is **evidence-backed**: open-source projects are read at the source l
 
 Overall = rounded mean of the six (0–100). Bands: **≥85 Exceptional · ≥70 Strong · ≥60 Functional · <60 Broken**.
 
-### Current standings (2026-W27)
+### Current standings (2026-W29)
 
 | # | Agent | Overall | Band | Basis | Version |
 |---|-------|:-------:|:----:|-------|---------|
-| 1 | Gemini CLI | 85 | Exceptional | source | v0.49.0 |
-| 2 | Claude Code | 84 | Strong | docs (closed) | v2.1.201 |
-| 3 | Codex CLI | 80 | Strong | source | v0.142.5 |
-| 4 | Cline | 73 | Strong | source | v4.0.6 |
-| 5 | opencode | 72 | Strong | source | v1.17.13 |
-| 6 | Pi | 72 | Strong | source | v0.80.3 |
-| 7 | Cursor Agent | 67 | Functional | docs (closed) | v3.9 |
+| 1 | Gemini CLI | 85 | Exceptional | source | v0.51.0 |
+| 2 | Claude Code | 84 | Strong | docs (closed) | v2.1.214 |
+| 3 | Codex CLI | 80 | Strong | source | v0.144.5 |
+| 4 | Cline | 73 | Strong | source | v4.0.9 |
+| 5 | opencode | 72 | Strong | source | v1.18.3 |
+| 6 | Pi | 72 | Strong | source | v0.80.10 |
+| 7 | Cursor Agent | 67 | Functional | docs (closed) | v3.11 |
 | 8 | Aider | 44 | Broken | source | v0.86.0 |
 
 > Scores shift as versions iterate and evidence is added — the [live site](https://agent-harness-atlas.github.io/) is canonical.

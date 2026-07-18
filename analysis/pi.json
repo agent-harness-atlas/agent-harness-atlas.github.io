@@ -19,7 +19,7 @@
         "packages/agent/src/harness/session/jsonl-storage.ts:L275-L292",
         "packages/coding-agent/src/core/session-manager.ts:L1289-L1328",
         "packages/coding-agent/src/core/resource-loader.ts:L66-L122",
-        "packages/coding-agent/src/core/system-prompt.ts:L153-L166"
+        "packages/coding-agent/src/core/system-prompt.ts:L144-L162"
       ],
       "keep": {
         "zh": "稳健的会话续存加项目上下文加载：\n- append-only JSONL 会话树，支持父子分支、从叶子分叉出带 parentSession 链的新会话\n- 逐级向上自动发现并加载 AGENTS.md/CLAUDE.md 注入系统提示",
@@ -152,7 +152,7 @@
     "packages/ai/src/api/anthropic-messages.ts"
   ],
   "version": {
-    "zh": "v0.80.3",
-    "en": "v0.80.3"
+    "zh": "v0.80.10",
+    "en": "v0.80.10"
   }
 }

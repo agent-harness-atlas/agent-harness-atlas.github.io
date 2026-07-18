@@ -4,8 +4,8 @@
 import type { AgentAnalysis, Meta } from "../types";
 
 export const META: Meta = {
-  "updated": "2026-W27",
-  "version": "4.1",
+  "updated": "2026-W29",
+  "version": "4.2",
   "sourceNote": {
     "zh": "评分由真实源码分析（开源）或官方文档（闭源）得出，逐条可核",
     "en": "Scores derived from real source analysis (open) or official docs (closed), each verifiable"
@@ -139,8 +139,8 @@ export const AGENTS: AgentAnalysis[] = [
     },
     "keyFiles": [],
     "version": {
-      "zh": "v2.1.201",
-      "en": "v2.1.201"
+      "zh": "v2.1.214",
+      "en": "v2.1.214"
     }
   },
   {
@@ -179,7 +179,7 @@ export const AGENTS: AgentAnalysis[] = [
         "en": "Context management is highly mature: `compact.rs` supports local/remote (`compact_remote_v2`) and token-budget compaction, distinguishes mid-turn vs pre-turn initial-context injection strategies, and `context_window.rs` computes `tokens_until_compaction` per `Total`/`BodyAfterPrefix` scope to auto-trigger compaction.",
         "citations": [
           "codex-rs/core/src/compact.rs:L55-L68",
-          "codex-rs/core/src/session/context_window.rs:L24-L92",
+          "codex-rs/core/src/session/context_window.rs:L23-L91",
           "codex-rs/core/src/compact_token_budget.rs:L44-L62"
         ],
         "keep": {
@@ -281,8 +281,8 @@ export const AGENTS: AgentAnalysis[] = [
       "codex-rs/utils/output-truncation/src/lib.rs"
     ],
     "version": {
-      "zh": "v0.142.5",
-      "en": "v0.142.5"
+      "zh": "v0.144.5",
+      "en": "v0.144.5"
     }
   },
   {
@@ -306,7 +306,7 @@ export const AGENTS: AgentAnalysis[] = [
           "packages/agent/src/harness/session/jsonl-storage.ts:L275-L292",
           "packages/coding-agent/src/core/session-manager.ts:L1289-L1328",
           "packages/coding-agent/src/core/resource-loader.ts:L66-L122",
-          "packages/coding-agent/src/core/system-prompt.ts:L153-L166"
+          "packages/coding-agent/src/core/system-prompt.ts:L144-L162"
         ],
         "keep": {
           "zh": "稳健的会话续存加项目上下文加载：\n- append-only JSONL 会话树，支持父子分支、从叶子分叉出带 parentSession 链的新会话\n- 逐级向上自动发现并加载 AGENTS.md/CLAUDE.md 注入系统提示",
@@ -439,8 +439,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/ai/src/api/anthropic-messages.ts"
     ],
     "version": {
-      "zh": "v0.80.3",
-      "en": "v0.80.3"
+      "zh": "v0.80.10",
+      "en": "v0.80.10"
     }
   },
   {
@@ -602,8 +602,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/opencode/src/storage/storage.ts"
     ],
     "version": {
-      "zh": "v1.17.13",
-      "en": "v1.17.13"
+      "zh": "v1.18.3",
+      "en": "v1.18.3"
     }
   },
   {
@@ -730,8 +730,8 @@ export const AGENTS: AgentAnalysis[] = [
     },
     "keyFiles": [],
     "version": {
-      "zh": "v3.9",
-      "en": "v3.9"
+      "zh": "v3.11",
+      "en": "v3.11"
     }
   },
   {
@@ -1022,8 +1022,8 @@ export const AGENTS: AgentAnalysis[] = [
       "apps/vscode/src/core/context/context-tracking/FileContextTracker.ts"
     ],
     "version": {
-      "zh": "v4.0.6",
-      "en": "v4.0.6"
+      "zh": "v4.0.9",
+      "en": "v4.0.9"
     }
   },
   {
@@ -1174,8 +1174,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/core/src/scheduler/scheduler.ts"
     ],
     "version": {
-      "zh": "v0.49.0",
-      "en": "v0.49.0"
+      "zh": "v0.51.0",
+      "en": "v0.51.0"
     }
   }
 ];

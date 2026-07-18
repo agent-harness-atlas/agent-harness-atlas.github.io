@@ -34,7 +34,7 @@
       "en": "Context management is highly mature: `compact.rs` supports local/remote (`compact_remote_v2`) and token-budget compaction, distinguishes mid-turn vs pre-turn initial-context injection strategies, and `context_window.rs` computes `tokens_until_compaction` per `Total`/`BodyAfterPrefix` scope to auto-trigger compaction.",
       "citations": [
         "codex-rs/core/src/compact.rs:L55-L68",
-        "codex-rs/core/src/session/context_window.rs:L24-L92",
+        "codex-rs/core/src/session/context_window.rs:L23-L91",
         "codex-rs/core/src/compact_token_budget.rs:L44-L62"
       ],
       "keep": {
@@ -136,7 +136,7 @@
     "codex-rs/utils/output-truncation/src/lib.rs"
   ],
   "version": {
-    "zh": "v0.142.5",
-    "en": "v0.142.5"
+    "zh": "v0.144.5",
+    "en": "v0.144.5"
   }
 }
