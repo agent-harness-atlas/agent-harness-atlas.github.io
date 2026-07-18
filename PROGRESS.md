@@ -65,3 +65,6 @@
 - **Green gate**: build ✓ · verify-citations.py ✓ 0/~180 bad · vitest 56/56 ✓ · playwright 69/69 ✓.
 - **Published**: commit `7da7ebf` pushed to main (Bojun-Vvibe), deploy-pages.yml **completed/success**,
   live bundle confirmed serving 2026-W27 + new versions. Work account (bojunchai_microsoft) restored active.
+
+## Session 2026-07-18T21:07:00Z
+Weekly refresh 2026-W29 (published). Version bumps: codex v0.142.5→v0.144.5, pi v0.80.3→v0.80.10, opencode v1.17.13→v1.18.3, cline v4.0.6→v4.0.9, gemini-cli v0.49.0→v0.51.0, claude-code v2.1.201→v2.1.214, cursor v3.9→v3.11 (aider unchanged v0.86.0). Citation drift re-anchored: codex.context context_window.rs L24-L92→L23-L91, pi.memory system-prompt.ts L153-L166→L144-L162 (pure re-anchor, capabilities intact). No score moves — all citations verify clean vs HEAD, restraint applied. meta 4.1→4.2. Gates: build✓ verify-citations 0✓ test 56✓ e2e 69✓. Deployed f841f36 completed/success, live bundle confirmed 2026-W29.
