@@ -4,7 +4,7 @@
 import type { AgentAnalysis, Meta } from "../types";
 
 export const META: Meta = {
-  "updated": "2026-W29",
+  "updated": "2026-W30",
   "version": "4.2",
   "sourceNote": {
     "zh": "评分由真实源码分析（开源）或官方文档（闭源）得出，逐条可核",
@@ -139,8 +139,8 @@ export const AGENTS: AgentAnalysis[] = [
     },
     "keyFiles": [],
     "version": {
-      "zh": "v2.1.214",
-      "en": "v2.1.214"
+      "zh": "v2.1.220",
+      "en": "v2.1.220"
     }
   },
   {
@@ -281,8 +281,8 @@ export const AGENTS: AgentAnalysis[] = [
       "codex-rs/utils/output-truncation/src/lib.rs"
     ],
     "version": {
-      "zh": "v0.144.5",
-      "en": "v0.144.5"
+      "zh": "v0.145.0",
+      "en": "v0.145.0"
     }
   },
   {
@@ -439,8 +439,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/ai/src/api/anthropic-messages.ts"
     ],
     "version": {
-      "zh": "v0.80.10",
-      "en": "v0.80.10"
+      "zh": "v0.82.1",
+      "en": "v0.82.1"
     }
   },
   {
@@ -602,8 +602,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/opencode/src/storage/storage.ts"
     ],
     "version": {
-      "zh": "v1.18.3",
-      "en": "v1.18.3"
+      "zh": "v1.18.5",
+      "en": "v1.18.5"
     }
   },
   {
@@ -730,8 +730,8 @@ export const AGENTS: AgentAnalysis[] = [
     },
     "keyFiles": [],
     "version": {
-      "zh": "v3.11",
-      "en": "v3.11"
+      "zh": "v3.13",
+      "en": "v3.13"
     }
   },
   {
@@ -1022,8 +1022,8 @@ export const AGENTS: AgentAnalysis[] = [
       "apps/vscode/src/core/context/context-tracking/FileContextTracker.ts"
     ],
     "version": {
-      "zh": "v4.0.9",
-      "en": "v4.0.9"
+      "zh": "v4.0.11",
+      "en": "v4.0.11"
     }
   },
   {
@@ -1174,8 +1174,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/core/src/scheduler/scheduler.ts"
     ],
     "version": {
-      "zh": "v0.51.0",
-      "en": "v0.51.0"
+      "zh": "v0.52.0",
+      "en": "v0.52.0"
     }
   }
 ];

@@ -152,7 +152,7 @@
     "packages/ai/src/api/anthropic-messages.ts"
   ],
   "version": {
-    "zh": "v0.80.10",
-    "en": "v0.80.10"
+    "zh": "v0.82.1",
+    "en": "v0.82.1"
   }
 }
