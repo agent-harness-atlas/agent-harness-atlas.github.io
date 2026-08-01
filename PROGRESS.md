@@ -76,3 +76,9 @@ cline v4.0.9→v4.0.11, claude-code v2.1.214→v2.1.220, cursor v3.11→v3.13. a
 Changelogs reviewed (pi/gemini) = provider support + bug fixes, no harness-capability moves → restraint, no score changes.
 Meta week stamp W29→W30 (meta.version held 4.2). README both tables synced. Top3 unchanged.
 Gates: build ✓ / verify-citations 0 ✓ / vitest 56 ✓ / e2e 69 ✓. Published 748eeaf, deploy completed/success, live bundle serves W30.
+
+## Session 2026-08-01T21:10:00 (weekly refresh 2026-W31)
+- Version bumps (6): codex v0.145.0→v0.146.0, pi v0.82.1→v0.83.0, opencode v1.18.5→v1.18.11, cline v4.0.11→v4.1.2, gemini-cli v0.52.0→v0.53.1, cursor v3.13→v3.14. aider (v0.86.0) + claude-code (v2.1.220) unchanged.
+- Citation re-anchor (HEAD drift, capability intact, no score change): codex.skill lib.rs L1-35→L1-25 + available_skills_instructions.rs → core-skills/src/skill_instructions.rs L1-41; pi.memory jsonl-storage.ts → jsonl-store.ts (L156-259, L262-292).
+- Scores frozen (cline 4.1 = MCP routing fix/provider adds; cursor 3.14 = iPad/Router/Start plan — no harness capability shift). meta.version held 4.2, only week stamp bumped.
+- Gates: build ✓ · verify-citations 0 ✓ · vitest 56 ✓ · playwright 69 ✓. Published c4a07bc.
