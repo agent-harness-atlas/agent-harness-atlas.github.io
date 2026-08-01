@@ -4,7 +4,7 @@
 import type { AgentAnalysis, Meta } from "../types";
 
 export const META: Meta = {
-  "updated": "2026-W30",
+  "updated": "2026-W31",
   "version": "4.2",
   "sourceNote": {
     "zh": "评分由真实源码分析（开源）或官方文档（闭源）得出，逐条可核",
@@ -196,9 +196,9 @@ export const AGENTS: AgentAnalysis[] = [
         "zh": "扩展面很宽：`core-skills` 文件级体系 + MCP + 插件 + 动态工具。",
         "en": "Broad extension surface: `core-skills` provides a file-based skill system (loader/render/injection/service), the `skills` crate installs embedded system skills into `CODEX_HOME/skills/.system`, and it integrates with MCP (`mcp_tool_call.rs`, 2200+ lines), plugin installation, and a dynamic tool registry.",
         "citations": [
-          "codex-rs/core-skills/src/lib.rs:L1-L35",
+          "codex-rs/core-skills/src/lib.rs:L1-L25",
           "codex-rs/skills/src/lib.rs:L10-L31",
-          "codex-rs/core/src/context/available_skills_instructions.rs:L24-L48"
+          "codex-rs/core-skills/src/skill_instructions.rs:L1-L41"
         ],
         "keep": {
           "zh": "扩展机制层次清晰且原生：\n- core-skills 提供 loader/render/injection/service 一整套\n- skills crate 把内置系统 Skill 装到 CODEX_HOME/skills/.system\n- 与 MCP（mcp_tool_call.rs 两千多行）、插件安装、动态工具注册表协同",
@@ -281,8 +281,8 @@ export const AGENTS: AgentAnalysis[] = [
       "codex-rs/utils/output-truncation/src/lib.rs"
     ],
     "version": {
-      "zh": "v0.145.0",
-      "en": "v0.145.0"
+      "zh": "v0.146.0",
+      "en": "v0.146.0"
     }
   },
   {
@@ -302,8 +302,8 @@ export const AGENTS: AgentAnalysis[] = [
         "zh": "持久化核心是一棵 JSONL 会话树，但没有自动语义记忆。",
         "en": "Persistence centers on a JSONL session tree: append-only storage, parent/child branches, and forking a new session from any leaf with a parentSession chain, enabling cross-session resume/continuation; project memory is injected by walking ancestors to load AGENTS.md/CLAUDE.md context files into the system prompt. There is no automatic semantic memory, vector store, or learned cross-session knowledge — long-term memory is essentially session persistence plus project instruction files.",
         "citations": [
-          "packages/agent/src/harness/session/jsonl-storage.ts:L161-L259",
-          "packages/agent/src/harness/session/jsonl-storage.ts:L275-L292",
+          "packages/agent/src/harness/session/jsonl-store.ts:L156-L259",
+          "packages/agent/src/harness/session/jsonl-store.ts:L262-L292",
           "packages/coding-agent/src/core/session-manager.ts:L1289-L1328",
           "packages/coding-agent/src/core/resource-loader.ts:L66-L122",
           "packages/coding-agent/src/core/system-prompt.ts:L144-L162"
@@ -439,8 +439,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/ai/src/api/anthropic-messages.ts"
     ],
     "version": {
-      "zh": "v0.82.1",
-      "en": "v0.82.1"
+      "zh": "v0.83.0",
+      "en": "v0.83.0"
     }
   },
   {
@@ -602,8 +602,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/opencode/src/storage/storage.ts"
     ],
     "version": {
-      "zh": "v1.18.5",
-      "en": "v1.18.5"
+      "zh": "v1.18.11",
+      "en": "v1.18.11"
     }
   },
   {
@@ -730,8 +730,8 @@ export const AGENTS: AgentAnalysis[] = [
     },
     "keyFiles": [],
     "version": {
-      "zh": "v3.13",
-      "en": "v3.13"
+      "zh": "v3.14",
+      "en": "v3.14"
     }
   },
   {
@@ -1022,8 +1022,8 @@ export const AGENTS: AgentAnalysis[] = [
       "apps/vscode/src/core/context/context-tracking/FileContextTracker.ts"
     ],
     "version": {
-      "zh": "v4.0.11",
-      "en": "v4.0.11"
+      "zh": "v4.1.2",
+      "en": "v4.1.2"
     }
   },
   {
@@ -1174,8 +1174,8 @@ export const AGENTS: AgentAnalysis[] = [
       "packages/core/src/scheduler/scheduler.ts"
     ],
     "version": {
-      "zh": "v0.52.0",
-      "en": "v0.52.0"
+      "zh": "v0.53.1",
+      "en": "v0.53.1"
     }
   }
 ];

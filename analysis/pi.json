@@ -15,8 +15,8 @@
       "zh": "持久化核心是一棵 JSONL 会话树，但没有自动语义记忆。",
       "en": "Persistence centers on a JSONL session tree: append-only storage, parent/child branches, and forking a new session from any leaf with a parentSession chain, enabling cross-session resume/continuation; project memory is injected by walking ancestors to load AGENTS.md/CLAUDE.md context files into the system prompt. There is no automatic semantic memory, vector store, or learned cross-session knowledge — long-term memory is essentially session persistence plus project instruction files.",
       "citations": [
-        "packages/agent/src/harness/session/jsonl-storage.ts:L161-L259",
-        "packages/agent/src/harness/session/jsonl-storage.ts:L275-L292",
+        "packages/agent/src/harness/session/jsonl-store.ts:L156-L259",
+        "packages/agent/src/harness/session/jsonl-store.ts:L262-L292",
         "packages/coding-agent/src/core/session-manager.ts:L1289-L1328",
         "packages/coding-agent/src/core/resource-loader.ts:L66-L122",
         "packages/coding-agent/src/core/system-prompt.ts:L144-L162"
@@ -152,7 +152,7 @@
     "packages/ai/src/api/anthropic-messages.ts"
   ],
   "version": {
-    "zh": "v0.82.1",
-    "en": "v0.82.1"
+    "zh": "v0.83.0",
+    "en": "v0.83.0"
   }
 }

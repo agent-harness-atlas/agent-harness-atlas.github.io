@@ -51,9 +51,9 @@
       "zh": "扩展面很宽：`core-skills` 文件级体系 + MCP + 插件 + 动态工具。",
       "en": "Broad extension surface: `core-skills` provides a file-based skill system (loader/render/injection/service), the `skills` crate installs embedded system skills into `CODEX_HOME/skills/.system`, and it integrates with MCP (`mcp_tool_call.rs`, 2200+ lines), plugin installation, and a dynamic tool registry.",
       "citations": [
-        "codex-rs/core-skills/src/lib.rs:L1-L35",
+        "codex-rs/core-skills/src/lib.rs:L1-L25",
         "codex-rs/skills/src/lib.rs:L10-L31",
-        "codex-rs/core/src/context/available_skills_instructions.rs:L24-L48"
+        "codex-rs/core-skills/src/skill_instructions.rs:L1-L41"
       ],
       "keep": {
         "zh": "扩展机制层次清晰且原生：\n- core-skills 提供 loader/render/injection/service 一整套\n- skills crate 把内置系统 Skill 装到 CODEX_HOME/skills/.system\n- 与 MCP（mcp_tool_call.rs 两千多行）、插件安装、动态工具注册表协同",
@@ -136,7 +136,7 @@
     "codex-rs/utils/output-truncation/src/lib.rs"
   ],
   "version": {
-    "zh": "v0.145.0",
-    "en": "v0.145.0"
+    "zh": "v0.146.0",
+    "en": "v0.146.0"
   }
 }
